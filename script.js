@@ -121,3 +121,11 @@ function updateScoreboard(entry) {
   scoreList.appendChild(li);
   scoreboard.style.display = 'block';
 }
+
+
+
+map.on('click', function (e) {
+  const point = map.project(e.latlng, map.getMaxZoom());
+  console.log(`Clicked Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
+  alert(`Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
+});
