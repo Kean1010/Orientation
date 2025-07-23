@@ -95,26 +95,20 @@
         return;
       }
 
-      const reader = new FileReader();
+      const formData = new FormData();
+      formData.append("file", file, file.name);
 
-      reader.onload = async function(e) {
-        const base64Data = e.target.result.split(',')[1]; // Remove base64 header
-        const contentType = file.type;
-        const filename = encodeURIComponent(file.name);
-
-        const response = await fetch("https://script.google.com/macros/s/AKfycbzFUncDDmXN1I9i5TejNUTCD0FOlj3-668v_5P_f5pth2VhIrfPOkZJp4d_BG5qVDpAmA/exec", { // ⬅️ Replace with your Apps Script URL
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbzFUncDDmXN1I9i5TejNUTCD0FOlj3-668v_5P_f5pth2VhIrfPOkZJp4d_BG5qVDpAmA/exec", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: `filename=${filename}&type=${encodeURIComponent(contentType)}&contents=${encodeURIComponent(base64Data)}`
+          body: formData
         });
 
         const result = await response.text();
         alert(result.includes("Upload success") ? "✅ Upload successful!" : "❌ " + result);
-      };
-
-      reader.readAsDataURL(file);
+      } catch (err) {
+        alert("❌ Upload failed: " + err.message);
+      }
     }
 
     function completeLevel() {
