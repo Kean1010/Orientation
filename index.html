@@ -34,6 +34,19 @@
     button {
       margin-top: 10px;
     }
+    /* Loading overlay styles */
+    #loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      font-size: 24px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
@@ -56,6 +69,9 @@
     <h3>Scoreboard</h3>
     <ul id="score-list"></ul>
   </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay">Uploading file, please wait...</div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -86,37 +102,47 @@
       document.getElementById('clue-box').style.display = 'block';
     }
 
-   async function uploadToDrive() {
-  const fileInput = document.getElementById("media-upload");
-  const file = fileInput.files[0];
+    async function uploadToDrive() {
+      const overlay = document.getElementById("loading-overlay");
+      const fileInput = document.getElementById("media-upload");
+      const file = fileInput.files[0];
 
-  if (!file) {
-    alert("Please select a photo or video to upload.");
-    return;
-  }
+      if (!file) {
+        alert("Please select a photo or video to upload.");
+        return;
+      }
 
-  const reader = new FileReader();
+      overlay.style.display = "flex";  // Show loading overlay
 
-  reader.onload = async function (e) {
-    const base64Data = e.target.result.split(',')[1]; // remove base64 prefix
-    const payload = {
-      filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
-      type: file.type,
-      data: base64Data
-    };
+      const reader = new FileReader();
 
-    const response = await fetch("https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec", {
-      method: "POST",
-  // DO NOT set "Content-Type" header manually here!
-  body: JSON.stringify(payload)
-});
+      reader.onload = async function (e) {
+        const base64Data = e.target.result.split(',')[1]; // remove base64 prefix
+        const payload = {
+          filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
+          type: file.type,
+          data: base64Data
+        };
 
-    const result = await response.text();
-    alert(result.includes("Upload success") ? "✅ Upload successful!" : "❌ " + result);
-  };
+        try {
+          const response = await fetch("https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec", {
+            method: "POST",
+            // DO NOT set "Content-Type" header manually here!
+            body: JSON.stringify(payload)
+          });
 
-  reader.readAsDataURL(file);
-}
+          const result = await response.text();
+          alert(result.includes("success") ? "✅ Upload successful!" : "❌ " + result);
+        } catch (error) {
+          alert("❌ Upload failed: " + error.message);
+        } finally {
+          overlay.style.display = "none";  // Hide loading overlay no matter what
+        }
+      };
+
+      reader.readAsDataURL(file);
+    }
+
     function completeLevel() {
       alert(`✅ Level ${currentLevel} completed!`);
       document.getElementById('clue-box').style.display = 'none';
