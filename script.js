@@ -15,7 +15,7 @@ map.fitBounds(bounds);
 
 // 4. Define game locations with pixel coordinates
 const locations = [
-  { x: 1507, y: -516, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1507, y: 516, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
   { x: 1200, y: 700, clue: "🕰️ Where time flows backward?", level: 2 }
 ];
 
