@@ -123,9 +123,8 @@ function updateScoreboard(entry) {
 }
 
 
-
 map.on('click', function (e) {
-  const point = map.project(e.latlng, map.getMaxZoom());
+  const point = map.project(e.latlng, 0);
   console.log(`Clicked Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
   alert(`Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
 });
