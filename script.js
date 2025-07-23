@@ -10,12 +10,22 @@ const locations = [
 ];
 
 let currentLevel = 0;
+let unlockedLevel = 1; // Only Level 1 is unlocked at start
+
+// Store markers separately so we can enable/disable them
+const markers = [];
 
 locations.forEach(loc => {
   const marker = L.marker([loc.lat, loc.lng]).addTo(map);
-  marker.bindPopup(`Level ${loc.level}`).on('click', () => {
-    startLevel(loc.level, loc.clue);
+  marker.bindPopup(`Level ${loc.level}`);
+  marker.on('click', () => {
+    if (loc.level <= unlockedLevel) {
+      startLevel(loc.level, loc.clue);
+    } else {
+      alert(`🚫 You must clear Level ${loc.level - 1} first!`);
+    }
   });
+  markers.push(marker);
 });
 
 function startLevel(level, clue) {
@@ -35,7 +45,7 @@ async function uploadToDrive() {
     return;
   }
 
-  overlay.style.display = "flex";  // Show loading overlay
+  overlay.style.display = "flex";
 
   const reader = new FileReader();
 
@@ -58,7 +68,7 @@ async function uploadToDrive() {
     } catch (error) {
       alert("❌ Upload failed: " + error.message);
     } finally {
-      overlay.style.display = "none";  // Hide loading overlay no matter what
+      overlay.style.display = "none";
     }
   };
 
@@ -69,6 +79,11 @@ function completeLevel() {
   alert(`✅ Level ${currentLevel} completed!`);
   document.getElementById('clue-box').style.display = 'none';
   updateScoreboard(`Player 1 completed Level ${currentLevel}`);
+
+  // Unlock next level
+  if (currentLevel === unlockedLevel) {
+    unlockedLevel++;
+  }
 }
 
 function updateScoreboard(entry) {
