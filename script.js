@@ -13,7 +13,7 @@ let currentLevel = 0;
 let unlockedLevel = 1; // start with only Level 1 unlocked
 const markers = [];
 
-// Add markers but hide all except first level
+// Add markers but don't show them yet
 locations.forEach(loc => {
   const marker = L.marker([loc.lat, loc.lng]);
   marker.bindPopup(`Level ${loc.level}`);
@@ -23,7 +23,7 @@ locations.forEach(loc => {
   markers.push(marker);
 });
 
-// Show first level marker
+// Show first marker (Level 1)
 markers[0].addTo(map);
 
 function startLevel(level, clue) {
@@ -71,7 +71,7 @@ async function uploadToDrive() {
       const result = await response.text();
       if (result.includes("success")) {
         alert("✅ Upload successful!");
-        // Show "Complete Level" button after successful upload
+        // Show "Complete Level" button
         document.querySelector('#clue-box button[onclick="completeLevel()"]').style.display = 'inline-block';
       } else {
         alert("❌ " + result);
@@ -94,7 +94,7 @@ function completeLevel() {
   // Unlock next level
   if (currentLevel === unlockedLevel) {
     unlockedLevel++;
-    // Show next marker if it exists
+    // Show next marker if exists
     const nextMarker = markers.find(m => m.getPopup().getContent() === `Level ${unlockedLevel}`);
     if (nextMarker) {
       nextMarker.addTo(map);
