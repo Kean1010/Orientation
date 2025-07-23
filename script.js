@@ -1,31 +1,43 @@
-// Map setup with CRS.Simple
+// 1. Use CRS.Simple for image-based map
 const map = L.map('map', {
   crs: L.CRS.Simple,
-  minZoom: -1
+  minZoom: -1,
 });
 
-// Image dimensions (pixels)
-const imageWidth = 2302;
-const imageHeight = 1314;
+// 2. Define image dimensions (replace with your actual image size in pixels)
+const imageWidth = 2302; // width of ite.png
+const imageHeight = 1314; // height of ite.png
 const bounds = [[0, 0], [imageHeight, imageWidth]];
 
-// Add image overlay and fit bounds
+// 3. Add image overlay as the map
 L.imageOverlay('ite.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
-// Locations: x = horizontal pixel, y = vertical pixel (from top)
+// 4. Define game locations with pixel coordinates
+// NOTE: Y coordinates are adjusted by adding offset to ensure positive & valid coordinates within image
 const locations = [
-  { x: 1507, y: 516, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1200, y: 700, clue: "🕰️ Where time flows backward?", level: 2 }
+  { x: 1507, y: -516, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1200, y: 700, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
+// Y offset calculated to shift negative y to positive within image height
+const yOffset = 516;
+
+// Correct coordinates by adding yOffset to each location's y
+const correctedLocations = locations.map(loc => ({
+  x: loc.x,
+  y: loc.y + yOffset,
+  clue: loc.clue,
+  level: loc.level,
+}));
+
 let currentLevel = 0;
-let unlockedLevel = 1; // Start unlocked level 1
+let unlockedLevel = 1; // start with only Level 1 unlocked
 const markers = [];
 
-// Create markers, flipping Y coordinate to fit Leaflet's CRS.Simple system
-locations.forEach(loc => {
-  const latlng = map.unproject([loc.x, imageHeight - loc.y], map.getMaxZoom());
+// Create markers using corrected coordinates
+correctedLocations.forEach(loc => {
+  const latlng = map.unproject([loc.x, loc.y], map.getMaxZoom());
   const marker = L.marker(latlng);
   marker.bindPopup(`Level ${loc.level}`);
   marker.on('click', () => {
@@ -34,7 +46,7 @@ locations.forEach(loc => {
   markers.push(marker);
 });
 
-// Show only the first marker initially
+// Show first marker only
 markers[0].addTo(map);
 
 function startLevel(level, clue) {
@@ -48,7 +60,7 @@ function startLevel(level, clue) {
   document.getElementById('clue-box').style.display = 'block';
 
   // Hide "Complete Level" button until upload success
-  document.getElementById('complete-btn').style.display = 'none';
+  document.querySelector('#clue-box button[onclick="completeLevel()"]').style.display = 'none';
 }
 
 async function uploadToDrive() {
@@ -70,20 +82,23 @@ async function uploadToDrive() {
     const payload = {
       filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
       type: file.type,
-      data: base64Data
+      data: base64Data,
     };
 
     try {
-      const response = await fetch("https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec",
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+        }
+      );
 
       const result = await response.text();
       if (result.includes("success")) {
         alert("✅ Upload successful!");
         // Show "Complete Level" button
-        document.getElementById('complete-btn').style.display = 'inline-block';
+        document.querySelector('#clue-box button[onclick="completeLevel()"]').style.display = 'inline-block';
       } else {
         alert("❌ " + result);
       }
@@ -122,15 +137,9 @@ function updateScoreboard(entry) {
   scoreboard.style.display = 'block';
 }
 
-// Add event listeners for buttons
-document.getElementById('upload-btn').addEventListener('click', uploadToDrive);
-document.getElementById('complete-btn').addEventListener('click', completeLevel);
-
-// Coordinate picker (optional, for your setup)
+// Optional: for debugging, show clicked pixel coords on map
 map.on('click', function (e) {
   const point = map.project(e.latlng, 0);
-  const x = Math.round(point.x);
-  const y = Math.round(imageHeight - point.y); // Flip Y axis for human-readable coordinates
-  console.log(`Clicked Pixel Coordinates: x=${x}, y=${y}`);
-  // alert(`Pixel Coordinates: x=${x}, y=${y}`); // uncomment if needed
+  console.log(`Clicked Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
+  alert(`Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
 });
