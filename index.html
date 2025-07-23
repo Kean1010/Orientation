@@ -1,205 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Orientation Adventure</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google API Client Library -->
-    <script src="https://apis.google.com/js/api.js"></script>
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client"></script>
-    <style>
-        body { font-family: 'Arial', sans-serif; }
-        #puzzleFeedback { color: red; }
-        .clue { display: none; }
-        .clue.active { display: block; }
-    </style>
-    <script>
-        // Google Drive API Configuration
-        const CLIENT_ID = '850400021008-bvtepiok8fgsl68r5s6d8b92ui46euqr.apps.googleusercontent.com
-'; // Replace with your OAuth 2.0 Client ID
-        const API_KEY = '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'; // Replace with your API Key
-        const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
-        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-        let tokenClient = null;
-        let accessToken = null;
-
-        // Initialize Google API Client
-        function initClient() {
-            console.log('Initializing Google API Client...');
-            if (!window.gapi) {
-                document.getElementById('uploadStatus').textContent = 'Google API script failed to load. Please check your network.';
-                console.error('gapi not loaded');
-                return;
-            }
-            gapi.load('client', () => {
-                console.log('gapi client loaded');
-                gapi.client.init({
-                    apiKey: API_KEY,
-                    discoveryDocs: DISCOVERY_DOCS,
-                }).then(() => {
-                    console.log('Google API Client initialized');
-                    // Check if Google Identity Services is loaded
-                    if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
-                        document.getElementById('uploadStatus').textContent = 'Google Identity Services not loaded. Please try again later.';
-                        console.error('Google Identity Services not available');
-                        return;
-                    }
-                    // Initialize tokenClient
-                    tokenClient = google.accounts.oauth2.initTokenClient({
-                        client_id: CLIENT_ID,
-                        scope: SCOPES,
-                        callback: (response) => {
-                            if (response.error) {
-                                document.getElementById('uploadStatus').textContent = `Authentication failed: ${response.error}. Please check console.`;
-                                console.error('Auth error:', response);
-                                return;
-                            }
-                            accessToken = response.access_token;
-                            document.getElementById('signInButton').classList.add('hidden');
-                            document.getElementById('mediaInput').classList.remove('hidden');
-                            document.getElementById('uploadButton').classList.remove('hidden');
-                            document.getElementById('uploadStatus').textContent = 'Signed in. Ready to upload!';
-                            console.log('Authentication successful, access token received');
-                        },
-                    });
-                    console.log('tokenClient initialized:', tokenClient);
-                }).catch(error => {
-                    document.getElementById('uploadStatus').textContent = `API initialization failed: ${error.message}. Check Client ID and origins.`;
-                    console.error('API init error:', error);
-                });
-            });
-        }
-
-        // Handle Google Sign-In
-        function handleAuthClick() {
-            console.log('Sign-in button clicked');
-            if (!tokenClient) {
-                document.getElementById('uploadStatus').textContent = 'Google API not initialized. Please refresh the page or check console.';
-                console.error('Token client not initialized');
-                return;
-            }
-            tokenClient.requestAccessToken();
-        }
-
-        // Initialize on page load
-        window.onload = () => {
-            console.log('Page loaded, initializing client');
-            initClient();
-        };
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orientation Game</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+    #clue-box {
+      padding: 20px;
+      background: #f9f9f9;
+      border-top: 2px solid #ccc;
+      display: none;
+    }
+    #scoreboard {
+      margin: 20px;
+      background: #eee;
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+    }
+    .upload-area {
+      margin-top: 10px;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-4 text-center">Orientation Adventure</h1>
+<body>
 
-        <!-- Google Sign-In and Upload Section -->
-        <section class="mb-6">
-            <h2 class="text-xl font-semibold mb-2">Upload Media to Google Drive</h2>
-            <button id="signInButton" onclick="handleAuthClick()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-2">Sign in with Google</button>
-            <input type="file" id="mediaInput" accept="image/*,video/*" class="mb-2 hidden">
-            <button id="uploadButton" onclick="uploadMedia()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden">Upload</button>
-            <p id="uploadStatus" class="mt-2"></p>
-        </section>
+  <h2 style="text-align:center; padding: 10px;">Orientation Game</h2>
 
-        <!-- Puzzle Section -->
-        <section class="mb-6">
-            <h2 class="text-xl font-semibold mb-2">Solve the Puzzle</h2>
-            <p>Riddle: I speak without a mouth and hear without ears. I have no body, but I come alive with the wind. What am I?</p>
-            <input type="text" id="puzzleAnswer" placeholder="Enter your answer" class="border p-2 w-full mb-2">
-            <button onclick="checkPuzzle()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Submit</button>
-            <p id="puzzleFeedback"></p>
-        </section>
+  <div id="map"></div>
 
-        <!-- Clues Section -->
-        <section>
-            <h2 class="text-xl font-semibold mb-2">Clues</h2>
-            <div id="clues">
-                <p class="clue" data-id="1">Clue 1: Check the campus map for hidden symbols.</p>
-                <p class="clue" data-id="2">Clue 2: The library holds a secret in the old books section.</p>
-                <p class="clue" data-id="3">Clue 3: Look near the fountain at noon.</p>
-            </div>
-            <button onclick="showNextClue()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 mt-2">Next Clue</button>
-        </section>
+  <div id="clue-box">
+    <h3 id="clue-title">Level Title</h3>
+    <p id="clue-text">Clue will appear here</p>
+    <div class="upload-area">
+      <input type="file" id="media-upload" accept="image/*,video/*"/>
+      <button onclick="uploadToDrive()">Submit Upload</button>
     </div>
+    <button onclick="completeLevel()">Mark Level Complete</button>
+  </div>
 
-    <script>
-        // Upload Media to Google Drive
-        function uploadMedia() {
-            console.log('Upload button clicked');
-            const fileInput = document.getElementById('mediaInput');
-            const file = fileInput.files[0];
-            const status = document.getElementById('uploadStatus');
-            if (!file) {
-                status.textContent = 'Please select a file.';
-                console.error('No file selected');
-                return;
-            }
-            if (!accessToken) {
-                status.textContent = 'Please sign in with Google.';
-                console.error('No access token');
-                return;
-            }
+  <div id="scoreboard">
+    <h3>Scoreboard</h3>
+    <ul id="score-list">
+      <!-- Placeholder scores -->
+    </ul>
+  </div>
 
-            const metadata = {
-                name: file.name,
-                mimeType: file.type,
-                parents: ['https://drive.google.com/drive/u/1/folders/1NL52QY-oyuWgG1_ab7nrYwqwIrDMBiMF'], // Replace with your Google Drive folder ID
-            };
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([1.3521, 103.8198], 13);
 
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-            form.append('file', file);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-            try {
-                console.log('Uploading file:', file.name);
-                const response = fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                    method: 'POST',
-                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-                    body: form,
-                }).then(response => {
-                    if (response.ok) {
-                        status.textContent = 'Upload successful!';
-                        console.log('Upload successful');
-                    } else {
-                        response.json().then(errorData => {
-                            status.textContent = `Upload failed: ${errorData.error.message}`;
-                            console.error('Upload error:', errorData);
-                        });
-                    }
-                });
-            } catch (error) {
-                status.textContent = `Upload failed: ${error.message}`;
-                console.error('Upload error:', error);
-            }
-        }
+    const locations = [
+      { lat: 1.2966, lng: 103.7764, clue: "Find the lion that guards the knowledge!", level: 1 },
+      { lat: 1.3048, lng: 103.8318, clue: "Where time flows backward?", level: 2 }
+    ];
 
-        // Puzzle Logic
-        function checkPuzzle() {
-            const answer = document.getElementById('puzzleAnswer').value.trim().toLowerCase();
-            const correctAnswer = 'echo';
-            const feedback = document.getElementById('puzzleFeedback');
-            if (answer === correctAnswer) {
-                feedback.textContent = 'Correct! You solved the riddle!';
-                feedback.style.color = 'green';
-                showNextClue();
-            } else {
-                feedback.textContent = 'Incorrect. Try again!';
-            }
-        }
+    let currentLevel = 0;
 
-        // Clue Logic
-        let currentClue = 0;
-        function showNextClue() {
-            const clues = document.querySelectorAll('.clue');
-            if (currentClue < clues.length) {
-                clues[currentClue].classList.add('active');
-                currentClue++;
-            } else {
-                alert('No more clues available!');
-            }
-        }
-    </script>
+    locations.forEach(loc => {
+      const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+      marker.bindPopup(`Level ${loc.level}`).on('click', () => {
+        startLevel(loc.level, loc.clue);
+      });
+    });
+
+    function startLevel(level, clue) {
+      currentLevel = level;
+      document.getElementById('clue-title').innerText = `Level ${level}`;
+      document.getElementById('clue-text').innerText = clue;
+      document.getElementById('clue-box').style.display = 'block';
+    }
+
+    function uploadToDrive() {
+      const fileInput = document.getElementById("media-upload");
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please select a photo or video to upload.");
+        return;
+      }
+
+      alert(`Pretending to upload "${file.name}" to Google Drive...`);
+      // Actual Google Drive integration will go here using Apps Script or OAuth
+    }
+
+    function completeLevel() {
+      alert(`Level ${currentLevel} completed!`);
+      document.getElementById('clue-box').style.display = 'none';
+      updateScoreboard(`Player 1 completed Level ${currentLevel}`);
+    }
+
+    function updateScoreboard(entry) {
+      const scoreboard = document.getElementById('scoreboard');
+      const scoreList = document.getElementById('score-list');
+      const li = document.createElement('li');
+      li.textContent = entry;
+      scoreList.appendChild(li);
+      scoreboard.style.display = 'block';
+    }
+  </script>
+
 </body>
 </html>
