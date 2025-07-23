@@ -1,0 +1,197 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Orientation Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google API Client Library -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; }
+        #puzzleFeedback { color: red; }
+        .clue { display: none; }
+        .clue.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-4 text-center">Orientation Adventure</h1>
+
+        <!-- Google Sign-In and Upload Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Upload Media to Google Drive</h2>
+            <button id="signInButton" onclick="handleAuthClick()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-2">Sign in with Google</button>
+            <input type="file" id="mediaInput" accept="image/*,video/*" class="mb-2 hidden">
+            <button id="uploadButton" onclick="uploadMedia()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden">Upload</button>
+            <p id="uploadStatus" class="mt-2"></p>
+        </section>
+
+        <!-- Puzzle Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Solve the Puzzle</h2>
+            <p>Riddle: I speak without a mouth and hear without ears. I have no body, but I come alive with the wind. What am I?</p>
+            <input type="text" id="puzzleAnswer" placeholder="Enter your answer" class="border p-2 w-full mb-2">
+            <button onclick="checkPuzzle()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Submit</button>
+            <p id="puzzleFeedback"></p>
+        </section>
+
+        <!-- Clues Section -->
+        <section>
+            <h2 class="text-xl font-semibold mb-2">Clues</h2>
+            <div id="clues">
+                <p class="clue" data-id="1">Clue 1: Check the campus map for hidden symbols.</p>
+                <p class="clue" data-id="2">Clue 2: The library holds a secret in the old books section.</p>
+                <p class="clue" data-id="3">Clue 3: Look near the fountain at noon.</p>
+            </div>
+            <button onclick="showNextClue()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 mt-2">Next Clue</button>
+        </section>
+    </div>
+
+    <script>
+        // Google Drive API Configuration
+        const CLIENT_ID = 'YOUR_CLIENT_ID';
+        const API_KEY = 'YOUR_API_KEY';
+        const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        let tokenClient;
+        let accessToken = null;
+
+        // Initialize Google API Client
+        function initClient() {
+            gapi.load('client:auth2', () => {
+                gapi.client.init({
+                    apiKey: API_KEY,
+                    discoveryDocs: DISCOVERY_DOCS,
+                }).then(() => {
+                    // Initialize Google Identity Services
+                    tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: CLIENT_ID,
+                        scope: SCOPES,
+                        callback: (response) => {
+                            accessToken = response.access_token;
+                            document.getElementById('signInButton').classList.add('hidden');
+                            document.getElementById('mediaInput').classList.remove('hidden');
+                            document.getElementById('uploadButton').classList.remove('hidden');
+                            document.getElementById('uploadStatus').textContent = 'Signed in. Ready to upload!';
+                        },
+                    });
+                });
+            });
+        }
+
+        // Handle Google Sign-In
+        function handleAuthClick() {
+            tokenClient.requestAccessToken();
+        }
+
+        // Upload Media to Google Drive
+        async function uploadMedia() {
+            const fileInput = document.getElementById('mediaInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                document.getElementById('uploadStatus').textContent = 'Please select a file.';
+                return;
+            }
+            if (!accessToken) {
+                document.getElementById('uploadStatus').textContent = 'Please sign in with Google.';
+                return;
+            }
+
+            const metadata = {
+                name: file.name,
+                mimeType: file.type,
+                parents: ['YOUR_FOLDER_ID'], // Replace with your Google Drive folder ID
+            };
+
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', file);
+
+            try {
+                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST',
+                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                    body: form,
+                });
+                if (response.ok) {
+                    document.getElementById('uploadStatus').textContent = 'Upload successful!';
+                } else {
+                    document.getElementById('uploadStatus').textContent = 'Upload failed: ' + response.statusText;
+                }
+            } catch (error) {
+                document.getElementById('uploadStatus').textContent = 'Upload failed: ' + error.message;
+            }
+        }
+
+        // Puzzle Logic
+        function checkPuzzle() {
+            const answer = document.getElementById('puzzleAnswer').value.trim().toLowerCase();
+            const correctAnswer = 'echo';
+            const feedback = document.getElementById('puzzleFeedback');
+            if (answer === correctAnswer) {
+                feedback.textContent = 'Correct! You solved the riddle!';
+                feedback.style.color = 'green';
+                showNextClue();
+            } else {
+                feedback.textContent = 'Incorrect. Try again!';
+            }
+        }
+
+        // Clue Logic
+        let currentClue = 0;
+        function showNextClue() {
+            const clues = document.querySelectorAll('.clue');
+            if (currentClue < clues.length) {
+                clues[currentClue].classList.add('active');
+                currentClue++;
+            } else {
+                alert('No more clues available!');
+            }
+        }
+
+        // Load Google API Client on page load
+        window.onload = initClient;
+    </script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</body>
+</html>
