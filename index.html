@@ -86,37 +86,39 @@
       document.getElementById('clue-box').style.display = 'block';
     }
 
-    async function uploadToDrive() {
-      const fileInput = document.getElementById("media-upload");
-      const file = fileInput.files[0];
+   async function uploadToDrive() {
+  const fileInput = document.getElementById("media-upload");
+  const file = fileInput.files[0];
 
-      if (!file) {
-        alert("Please select a photo or video to upload.");
-        return;
-      }
+  if (!file) {
+    alert("Please select a photo or video to upload.");
+    return;
+  }
 
-      const reader = new FileReader();
+  const reader = new FileReader();
 
-      reader.onload = async function(e) {
-        const base64Data = e.target.result.split(',')[1]; // remove base64 prefix
-        const contentType = file.type;
-        const filename = `Level${currentLevel}_${Date.now()}_${file.name}`; // auto-rename
+  reader.onload = async function (e) {
+    const base64Data = e.target.result.split(',')[1]; // remove base64 prefix
+    const payload = {
+      filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
+      type: file.type,
+      data: base64Data
+    };
 
-        const response = await fetch("https://script.google.com/macros/s/AKfycbwirwvoUPtTOTcasXMYWM76u55cw8eiHTh-fookVafcXQIk3qZ3UewUkF9QOiyCj_geyw/exec", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: `filename=${encodeURIComponent(filename)}&type=${encodeURIComponent(contentType)}&data=${encodeURIComponent(base64Data)}`
-        });
+    const response = await fetch("YOUR_WEB_APP_URL", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
 
-        const result = await response.text();
-        alert(result.includes("Upload success") ? "✅ Upload successful!" : "❌ " + result);
-      };
+    const result = await response.text();
+    alert(result.includes("Upload success") ? "✅ Upload successful!" : "❌ " + result);
+  };
 
-      reader.readAsDataURL(file);
-    }
-
+  reader.readAsDataURL(file);
+}
     function completeLevel() {
       alert(`✅ Level ${currentLevel} completed!`);
       document.getElementById('clue-box').style.display = 'none';
