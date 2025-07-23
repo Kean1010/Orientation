@@ -1,0 +1,52 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+#map {
+  height: 500px;
+  width: 100%;
+}
+
+#clue-box {
+  padding: 20px;
+  background: #f9f9f9;
+  border-top: 2px solid #ccc;
+  display: none;
+}
+
+#scoreboard {
+  margin: 20px;
+  background: #eee;
+  padding: 10px;
+  border-radius: 5px;
+  display: none;
+}
+
+.upload-area {
+  margin-top: 10px;
+}
+
+button {
+  margin-top: 10px;
+}
+
+.game-title {
+  text-align: center;
+  padding: 10px;
+}
+
+/* Loading overlay */
+#loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  font-size: 24px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  user-select: none;
+}
