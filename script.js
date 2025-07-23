@@ -1,21 +1,32 @@
-const map = L.map('map').setView([1.3521, 103.8198], 13);
+// 1. Use CRS.Simple for image-based map
+const map = L.map('map', {
+  crs: L.CRS.Simple,
+  minZoom: -1
+});
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+// 2. Define image dimensions (replace with your actual image size in pixels)
+const imageWidth = 2302;  // e.g., width of ite.png
+const imageHeight = 1314; // e.g., height of ite.png
+const bounds = [[0, 0], [imageHeight, imageWidth]];
 
+// 3. Add image overlay as the map
+L.imageOverlay('ite.png', bounds).addTo(map);
+map.fitBounds(bounds);
+
+// 4. Define game locations with pixel coordinates
 const locations = [
-  { lat: 1.2966, lng: 103.7764, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { lat: 1.3048, lng: 103.8318, clue: "🕰️ Where time flows backward?", level: 2 }
+  { x: 500, y: 300, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1200, y: 700, clue: "🕰️ Where time flows backward?", level: 2 }
 ];
 
 let currentLevel = 0;
 let unlockedLevel = 1; // start with only Level 1 unlocked
 const markers = [];
 
-// Add markers but don't show them yet
+// Convert pixel to map coords and create markers (hidden initially)
 locations.forEach(loc => {
-  const marker = L.marker([loc.lat, loc.lng]);
+  const latlng = map.unproject([loc.x, loc.y], map.getMaxZoom());
+  const marker = L.marker(latlng);
   marker.bindPopup(`Level ${loc.level}`);
   marker.on('click', () => {
     startLevel(loc.level, loc.clue);
@@ -23,7 +34,7 @@ locations.forEach(loc => {
   markers.push(marker);
 });
 
-// Show first marker (Level 1)
+// Show first marker
 markers[0].addTo(map);
 
 function startLevel(level, clue) {
