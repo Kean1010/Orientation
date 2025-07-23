@@ -1,31 +1,31 @@
-// 1. Use CRS.Simple for image-based map
+// Map setup with CRS.Simple
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -1
 });
 
-// 2. Define image dimensions (replace with your actual image size in pixels)
-const imageWidth = 2302;  // e.g., width of ite.png
-const imageHeight = 1314; // e.g., height of ite.png
+// Image dimensions (pixels)
+const imageWidth = 2302;
+const imageHeight = 1314;
 const bounds = [[0, 0], [imageHeight, imageWidth]];
 
-// 3. Add image overlay as the map
+// Add image overlay and fit bounds
 L.imageOverlay('ite.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
-// 4. Define game locations with pixel coordinates
+// Locations: x = horizontal pixel, y = vertical pixel (from top)
 const locations = [
   { x: 1507, y: 516, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
   { x: 1200, y: 700, clue: "🕰️ Where time flows backward?", level: 2 }
 ];
 
 let currentLevel = 0;
-let unlockedLevel = 1; // start with only Level 1 unlocked
+let unlockedLevel = 1; // Start unlocked level 1
 const markers = [];
 
-// Convert pixel to map coords and create markers (hidden initially)
+// Create markers, flipping Y coordinate to fit Leaflet's CRS.Simple system
 locations.forEach(loc => {
-  const latlng = map.unproject([loc.x, loc.y], map.getMaxZoom());
+  const latlng = map.unproject([loc.x, imageHeight - loc.y], map.getMaxZoom());
   const marker = L.marker(latlng);
   marker.bindPopup(`Level ${loc.level}`);
   marker.on('click', () => {
@@ -34,7 +34,7 @@ locations.forEach(loc => {
   markers.push(marker);
 });
 
-// Show first marker
+// Show only the first marker initially
 markers[0].addTo(map);
 
 function startLevel(level, clue) {
@@ -48,7 +48,7 @@ function startLevel(level, clue) {
   document.getElementById('clue-box').style.display = 'block';
 
   // Hide "Complete Level" button until upload success
-  document.querySelector('#clue-box button[onclick="completeLevel()"]').style.display = 'none';
+  document.getElementById('complete-btn').style.display = 'none';
 }
 
 async function uploadToDrive() {
@@ -83,7 +83,7 @@ async function uploadToDrive() {
       if (result.includes("success")) {
         alert("✅ Upload successful!");
         // Show "Complete Level" button
-        document.querySelector('#clue-box button[onclick="completeLevel()"]').style.display = 'inline-block';
+        document.getElementById('complete-btn').style.display = 'inline-block';
       } else {
         alert("❌ " + result);
       }
@@ -122,9 +122,15 @@ function updateScoreboard(entry) {
   scoreboard.style.display = 'block';
 }
 
+// Add event listeners for buttons
+document.getElementById('upload-btn').addEventListener('click', uploadToDrive);
+document.getElementById('complete-btn').addEventListener('click', completeLevel);
 
+// Coordinate picker (optional, for your setup)
 map.on('click', function (e) {
   const point = map.project(e.latlng, 0);
-  console.log(`Clicked Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
-  alert(`Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
+  const x = Math.round(point.x);
+  const y = Math.round(imageHeight - point.y); // Flip Y axis for human-readable coordinates
+  console.log(`Clicked Pixel Coordinates: x=${x}, y=${y}`);
+  // alert(`Pixel Coordinates: x=${x}, y=${y}`); // uncomment if needed
 });
