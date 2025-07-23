@@ -31,6 +31,9 @@
     .upload-area {
       margin-top: 10px;
     }
+    button {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -51,9 +54,7 @@
 
   <div id="scoreboard">
     <h3>Scoreboard</h3>
-    <ul id="score-list">
-      <!-- Placeholder scores -->
-    </ul>
+    <ul id="score-list"></ul>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -65,8 +66,8 @@
     }).addTo(map);
 
     const locations = [
-      { lat: 1.2966, lng: 103.7764, clue: "Find the lion that guards the knowledge!", level: 1 },
-      { lat: 1.3048, lng: 103.8318, clue: "Where time flows backward?", level: 2 }
+      { lat: 1.2966, lng: 103.7764, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+      { lat: 1.3048, lng: 103.8318, clue: "🕰️ Where time flows backward?", level: 2 }
     ];
 
     let currentLevel = 0;
@@ -85,20 +86,39 @@
       document.getElementById('clue-box').style.display = 'block';
     }
 
-    function uploadToDrive() {
+    async function uploadToDrive() {
       const fileInput = document.getElementById("media-upload");
       const file = fileInput.files[0];
+
       if (!file) {
         alert("Please select a photo or video to upload.");
         return;
       }
 
-      alert(`Pretending to upload "${file.name}" to Google Drive...`);
-      // Actual Google Drive integration will go here using Apps Script or OAuth
+      const reader = new FileReader();
+
+      reader.onload = async function(e) {
+        const base64Data = e.target.result.split(',')[1]; // Remove base64 header
+        const contentType = file.type;
+        const filename = encodeURIComponent(file.name);
+
+        const response = await fetch("YOUR_WEB_APP_URL", { // ⬅️ Replace with your Apps Script URL
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: `filename=${filename}&type=${encodeURIComponent(contentType)}&contents=${encodeURIComponent(base64Data)}`
+        });
+
+        const result = await response.text();
+        alert(result.includes("Upload success") ? "✅ Upload successful!" : "❌ " + result);
+      };
+
+      reader.readAsDataURL(file);
     }
 
     function completeLevel() {
-      alert(`Level ${currentLevel} completed!`);
+      alert(`✅ Level ${currentLevel} completed!`);
       document.getElementById('clue-box').style.display = 'none';
       updateScoreboard(`Player 1 completed Level ${currentLevel}`);
     }
