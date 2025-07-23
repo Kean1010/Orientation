@@ -20,7 +20,7 @@
       <input type="file" id="media-upload" accept="image/*,video/*"/>
       <button onclick="uploadToDrive()">Submit Upload</button>
     </div>
-    <button onclick="completeLevel()">Mark Level Complete</button>
+    <button id="complete-level-btn" style="display:none;" onclick="completeLevel()">Mark Level Complete</button>
   </div>
 
   <div id="scoreboard">
@@ -29,7 +29,7 @@
   </div>
 
   <!-- Loading overlay -->
-  <div id="loading-overlay">Uploading file, please wait...</div>
+  <div id="loading-overlay" style="display:none;">Uploading file, please wait...</div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
