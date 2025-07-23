@@ -8,48 +8,13 @@
     <!-- Google API Client Library -->
     <script src="https://apis.google.com/js/api.js"></script>
     <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
     <style>
         body { font-family: 'Arial', sans-serif; }
         #puzzleFeedback { color: red; }
         .clue { display: none; }
         .clue.active { display: block; }
     </style>
-</head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-4 text-center">Orientation Adventure</h1>
-
-        <!-- Google Sign-In and Upload Section -->
-        <section class="mb-6">
-            <h2 class="text-xl font-semibold mb-2">Upload Media to Google Drive</h2>
-            <button id="signInButton" onclick="handleAuthClick()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-2">Sign in with Google</button>
-            <input type="file" id="mediaInput" accept="image/*,video/*" class="mb-2 hidden">
-            <button id="uploadButton" onclick="uploadMedia()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden">Upload</button>
-            <p id="uploadStatus" class="mt-2"></p>
-        </section>
-
-        <!-- Puzzle Section -->
-        <section class="mb-6">
-            <h2 class="text-xl font-semibold mb-2">Solve the Puzzle</h2>
-            <p>Riddle: I speak without a mouth and hear without ears. I have no body, but I come alive with the wind. What am I?</p>
-            <input type="text" id="puzzleAnswer" placeholder="Enter your answer" class="border p-2 w-full mb-2">
-            <button onclick="checkPuzzle()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Submit</button>
-            <p id="puzzleFeedback"></p>
-        </section>
-
-        <!-- Clues Section -->
-        <section>
-            <h2 class="text-xl font-semibold mb-2">Clues</h2>
-            <div id="clues">
-                <p class="clue" data-id="1">Clue 1: Check the campus map for hidden symbols.</p>
-                <p class="clue" data-id="2">Clue 2: The library holds a secret in the old books section.</p>
-                <p class="clue" data-id="3">Clue 3: Look near the fountain at noon.</p>
-            </div>
-            <button onclick="showNextClue()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 mt-2">Next Clue</button>
-        </section>
-    </div>
-
     <script>
         // Google Drive API Configuration
         const CLIENT_ID = '850400021008-bvtepiok8fgsl68r5s6d8b92ui46euqr.apps.googleusercontent.com
@@ -69,6 +34,7 @@
                 return;
             }
             gapi.load('client', () => {
+                console.log('gapi client loaded');
                 gapi.client.init({
                     apiKey: API_KEY,
                     discoveryDocs: DISCOVERY_DOCS,
@@ -117,8 +83,50 @@
             tokenClient.requestAccessToken();
         }
 
+        // Initialize on page load
+        window.onload = () => {
+            console.log('Page loaded, initializing client');
+            initClient();
+        };
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-4 text-center">Orientation Adventure</h1>
+
+        <!-- Google Sign-In and Upload Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Upload Media to Google Drive</h2>
+            <button id="signInButton" onclick="handleAuthClick()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-2">Sign in with Google</button>
+            <input type="file" id="mediaInput" accept="image/*,video/*" class="mb-2 hidden">
+            <button id="uploadButton" onclick="uploadMedia()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden">Upload</button>
+            <p id="uploadStatus" class="mt-2"></p>
+        </section>
+
+        <!-- Puzzle Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Solve the Puzzle</h2>
+            <p>Riddle: I speak without a mouth and hear without ears. I have no body, but I come alive with the wind. What am I?</p>
+            <input type="text" id="puzzleAnswer" placeholder="Enter your answer" class="border p-2 w-full mb-2">
+            <button onclick="checkPuzzle()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Submit</button>
+            <p id="puzzleFeedback"></p>
+        </section>
+
+        <!-- Clues Section -->
+        <section>
+            <h2 class="text-xl font-semibold mb-2">Clues</h2>
+            <div id="clues">
+                <p class="clue" data-id="1">Clue 1: Check the campus map for hidden symbols.</p>
+                <p class="clue" data-id="2">Clue 2: The library holds a secret in the old books section.</p>
+                <p class="clue" data-id="3">Clue 3: Look near the fountain at noon.</p>
+            </div>
+            <button onclick="showNextClue()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 mt-2">Next Clue</button>
+        </section>
+    </div>
+
+    <script>
         // Upload Media to Google Drive
-        async function uploadMedia() {
+        function uploadMedia() {
             console.log('Upload button clicked');
             const fileInput = document.getElementById('mediaInput');
             const file = fileInput.files[0];
@@ -137,7 +145,7 @@
             const metadata = {
                 name: file.name,
                 mimeType: file.type,
-                parents: ['https://drive.google.com/drive/u/1/folders/1NL52QY-oyuWgG1_ab7nrYwqwIrDMBiMF'], // Replace with your Google Drive folder ID
+                parents: [https://drive.google.com/drive/u/1/folders/1NL52QY-oyuWgG1_ab7nrYwqwIrDMBiMF], // Replace with your Google Drive folder ID
             };
 
             const form = new FormData();
@@ -146,19 +154,21 @@
 
             try {
                 console.log('Uploading file:', file.name);
-                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                const response = fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
                     method: 'POST',
                     headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
                     body: form,
+                }).then(response => {
+                    if (response.ok) {
+                        status.textContent = 'Upload successful!';
+                        console.log('Upload successful');
+                    } else {
+                        response.json().then(errorData => {
+                            status.textContent = `Upload failed: ${errorData.error.message}`;
+                            console.error('Upload error:', errorData);
+                        });
+                    }
                 });
-                if (response.ok) {
-                    status.textContent = 'Upload successful!';
-                    console.log('Upload successful');
-                } else {
-                    const errorData = await response.json();
-                    status.textContent = `Upload failed: ${errorData.error.message}`;
-                    console.error('Upload error:', errorData);
-                }
             } catch (error) {
                 status.textContent = `Upload failed: ${error.message}`;
                 console.error('Upload error:', error);
@@ -190,12 +200,6 @@
                 alert('No more clues available!');
             }
         }
-
-        // Initialize Google API Client on page load
-        window.onload = () => {
-            console.log('Page loaded, initializing client');
-            initClient();
-        };
     </script>
 </body>
 </html>
