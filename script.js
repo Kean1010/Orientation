@@ -10,29 +10,34 @@ const locations = [
 ];
 
 let currentLevel = 0;
-let unlockedLevel = 1; // Only Level 1 is unlocked at start
-
-// Store markers separately so we can enable/disable them
+let unlockedLevel = 1; // start with only Level 1 unlocked
 const markers = [];
 
+// Add markers but hide all except first level
 locations.forEach(loc => {
-  const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+  const marker = L.marker([loc.lat, loc.lng]);
   marker.bindPopup(`Level ${loc.level}`);
   marker.on('click', () => {
-    if (loc.level <= unlockedLevel) {
-      startLevel(loc.level, loc.clue);
-    } else {
-      alert(`🚫 You must clear Level ${loc.level - 1} first!`);
-    }
+    startLevel(loc.level, loc.clue);
   });
   markers.push(marker);
 });
 
+// Show first level marker
+markers[0].addTo(map);
+
 function startLevel(level, clue) {
+  if (level !== unlockedLevel) {
+    alert("🚫 You must unlock this level first!");
+    return;
+  }
   currentLevel = level;
   document.getElementById('clue-title').innerText = `Level ${level}`;
   document.getElementById('clue-text').innerText = clue;
   document.getElementById('clue-box').style.display = 'block';
+
+  // Hide "Complete Level" button until upload success
+  document.querySelector('#clue-box button[onclick="completeLevel()"]').style.display = 'none';
 }
 
 async function uploadToDrive() {
@@ -64,7 +69,13 @@ async function uploadToDrive() {
       });
 
       const result = await response.text();
-      alert(result.includes("success") ? "✅ Upload successful!" : "❌ " + result);
+      if (result.includes("success")) {
+        alert("✅ Upload successful!");
+        // Show "Complete Level" button after successful upload
+        document.querySelector('#clue-box button[onclick="completeLevel()"]').style.display = 'inline-block';
+      } else {
+        alert("❌ " + result);
+      }
     } catch (error) {
       alert("❌ Upload failed: " + error.message);
     } finally {
@@ -83,6 +94,11 @@ function completeLevel() {
   // Unlock next level
   if (currentLevel === unlockedLevel) {
     unlockedLevel++;
+    // Show next marker if it exists
+    const nextMarker = markers.find(m => m.getPopup().getContent() === `Level ${unlockedLevel}`);
+    if (nextMarker) {
+      nextMarker.addTo(map);
+    }
   }
 }
 
