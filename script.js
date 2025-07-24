@@ -103,8 +103,7 @@ function startLevel(level, clue) {
   }
 }
 
-async function uploadToDrive() {
-  const overlay = document.getElementById("loading-overlay");
+function uploadToDrive() {
   const fileInput = document.getElementById("media-upload");
   const file = fileInput.files[0];
 
@@ -113,54 +112,10 @@ async function uploadToDrive() {
     return;
   }
 
-  if (overlay) {
-    // Create progress bar
-    const progressBar = document.createElement('progress');
-    progressBar.id = 'upload-progress';
-    progressBar.max = 100;
-    progressBar.value = 0;
-    progressBar.style.width = '80%';
-    progressBar.style.marginTop = '20px';
-
-    // Clear overlay content and add progress bar
-    overlay.innerHTML = '<div>Processing file...</div>';
-    overlay.appendChild(progressBar);
-    overlay.style.display = "flex";
-    console.log('Loading overlay displayed with progress bar');
-  } else {
-    console.error('Loading overlay not found');
-  }
-
+  console.log(`Starting upload for file: ${file.name}`);
   const reader = new FileReader();
 
-  reader.onprogress = function (e) {
-    if (e.lengthComputable) {
-      const percentComplete = (e.loaded / e.total) * 100;
-      console.log(`File reading progress: ${percentComplete}%`);
-      const progressBar = document.getElementById('upload-progress');
-      if (progressBar) {
-        progressBar.value = percentComplete;
-      } else {
-        console.error('Progress bar element not found during file reading');
-      }
-    } else {
-      console.log('File reading progress event fired, but lengthComputable is false');
-    }
-  };
-
-  reader.onload = async function (e) {
-    // Set progress to 100% when file reading completes
-    const progressBar = document.getElementById('upload-progress');
-    if (progressBar) {
-      progressBar.value = 100;
-      console.log('File reading complete: Progress set to 100%');
-    }
-    // Update overlay text to indicate uploading phase
-    const overlay = document.getElementById("loading-overlay");
-    if (overlay) {
-      overlay.firstChild.textContent = 'Uploading to server...';
-    }
-
+  reader.onload = function (e) {
     const base64Data = e.target.result.split(',')[1];
     const payload = {
       filename: `Level${currentLevel}_${teamName}_${className}_${Date.now()}_${file.name}`,
@@ -170,53 +125,40 @@ async function uploadToDrive() {
       className: className,
     };
 
-    try {
-      console.log('Sending upload request to proxy');
-      const response = await fetch(
-        'https://your-proxy.vercel.app/api/proxy', // Replace with your Vercel proxy URL
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          mode: 'cors',
-        }
-      );
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
 
-      const result = await response.text();
-      console.log(`Upload response: ${result}`);
-      if (result.includes("success")) {
-        alert("✅ Upload successful!");
-        const completeBtn = document.getElementById('complete-level-btn');
-        if (completeBtn) {
-          completeBtn.style.display = 'inline-block';
-          console.log('Complete Level button displayed');
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        console.log(`Upload response: ${xhr.responseText}`);
+        if (xhr.status === 200 && xhr.responseText.includes("success")) {
+          alert("✅ Upload successful!");
+          const completeBtn = document.getElementById('complete-level-btn');
+          if (completeBtn) {
+            completeBtn.style.display = 'inline-block';
+            console.log('Complete Level button displayed');
+          } else {
+            console.error('Complete Level button not found after upload');
+          }
         } else {
-          console.error('Complete Level button not found after upload');
+          alert("❌ Upload failed: " + xhr.responseText);
         }
-      } else {
-        alert("❌ " + result);
       }
-    } catch (error) {
-      console.error('Fetch error:', error.message);
-      alert("❌ Upload failed: " + error.message);
-    } finally {
-      if (overlay) {
-        overlay.style.display = "none";
-        overlay.innerHTML = ''; // Clear progress bar
-        console.log('Loading overlay hidden');
-      }
-    }
+    };
+
+    xhr.onerror = function () {
+      console.error('XMLHttpRequest error:', xhr.statusText);
+      alert("❌ Upload failed: Network error");
+    };
+
+    console.log('Sending upload request to Google Apps Script');
+    xhr.send(JSON.stringify(payload));
   };
 
   reader.onerror = function () {
     console.error('FileReader error:', reader.error);
     alert("❌ File reading failed: " + reader.error.message);
-    if (overlay) {
-      overlay.style.display = "none";
-      overlay.innerHTML = '';
-    }
   };
 
   reader.readAsDataURL(file);
