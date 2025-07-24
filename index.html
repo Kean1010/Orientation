@@ -1,41 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orientation Game</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <h1 class="game-title">Orientation Treasure Hunt</h1>
-  <div id="team-form-overlay">
-    <div id="team-form-container">
-      <h2>Enter Team Details</h2>
-      <form id="team-form">
-        <label for="team-name">Team Name:</label>
-        <input type="text" id="team-name" required>
-        <label for="class-name">Class:</label>
-        <input type="text" id="class-name" required>
-        <button type="submit">Start Game</button>
-      </form>
-    </div>
-  </div>
-  <div id="map" style="display: none;"></div>
-  <div id="clue-box">
-    <h2 id="clue-title"></h2>
-    <p id="clue-text"></p>
-    <div class="upload-area">
-      <input type="file" id="media-upload" accept="image/*,video/*">
-      <button onclick="uploadToDrive()">Upload</button>
-    </div>
-    <button id="complete-level-btn" style="display: none;">Complete Level</button>
-  </div>
-  <div id="scoreboard" style="display: none;">
-    <h2>Scoreboard</h2>
-    <ul id="score-list"></ul>
-  </div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+<form id="team-form">
+  <input id="team-name" placeholder="Enter Team Name" required />
+  <input id="class-name" placeholder="Enter Class" required />
+  <button type="submit">Start</button>
+</form>
+
+<div id="team-form-overlay"></div>
+
+<div id="map" style="display:none;"></div>
+
+<div id="clue-box" style="display:none;">
+  <h2 id="clue-title"></h2>
+  <p id="clue-text"></p>
+  <input type="file" id="media-upload" accept="image/*,video/*" />
+  <button onclick="uploadToDrive()">Upload Media</button>
+  <button id="complete-level-btn" style="display:none;" onclick="completeLevel()">Complete Level</button>
+</div>
+
+<div id="scoreboard" style="display:none;">
+  <ul id="score-list"></ul>
+</div>
