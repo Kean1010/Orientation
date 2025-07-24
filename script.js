@@ -1,3 +1,26 @@
+// Team information variables
+let teamName = '';
+let className = '';
+
+// Handle team form submission
+document.addEventListener('DOMContentLoaded', function() {
+  const teamForm = document.getElementById('team-info-form');
+  const teamFormOverlay = document.getElementById('team-form-overlay');
+  
+  teamForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    teamName = document.getElementById('team-name').value.trim();
+    className = document.getElementById('class-name').value.trim();
+    
+    if (teamName && className) {
+      // Hide the overlay and start the game
+      teamFormOverlay.style.display = 'none';
+      console.log(`Team: ${teamName}, Class: ${className}`);
+    }
+  });
+});
+
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -1,
@@ -79,7 +102,7 @@ async function uploadToDrive() {
   reader.onload = async function (e) {
     const base64Data = e.target.result.split(',')[1];
     const payload = {
-      filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
+      filename: `${teamName}_${className}_Level${currentLevel}_${Date.now()}_${file.name}`,
       type: file.type,
       data: base64Data,
     };
@@ -114,7 +137,7 @@ async function uploadToDrive() {
 function completeLevel() {
   alert(`✅ Level ${currentLevel} completed!`);
   document.getElementById('clue-box').style.display = 'none';
-  updateScoreboard(`Player 1 completed Level ${currentLevel}`);
+  updateScoreboard(`${teamName} (${className}) completed Level ${currentLevel}`);
 
   if (currentLevel === unlockedLevel) {
     // Remove the current marker using its index
