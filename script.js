@@ -1,19 +1,18 @@
-// 1. Use CRS.Simple for image-based map
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -1,
 });
 
-// 2. Define image dimensions
+// Define image dimensions
 const imageWidth = 2302;
 const imageHeight = 1314;
 const bounds = [[0, 0], [imageHeight, imageWidth]];
 
-// 3. Add image overlay
+// Add image overlay
 L.imageOverlay('ite.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
-// 4. Define game locations using VALID pixel coordinates (replace with ones you click)
+// Define game locations using VALID pixel coordinates
 const locations = [
   { x: 1151, y: 650, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
   { x: 1300, y: 650, clue: "🕰️ Where time flows backward?", level: 2 },
@@ -25,7 +24,7 @@ const markers = [];
 
 // Create markers
 locations.forEach(loc => {
-  const latlng = map.unproject([loc.x, loc.y], map.getMaxZoom());
+  const latlng = map.unproject([loc.x, loc.y], 0); // Use zoom level 0 for CRS.Simple
   const marker = L.marker(latlng);
   marker.bindPopup(`Level ${loc.level}`);
   marker.on('click', () => startLevel(loc.level, loc.clue));
