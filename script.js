@@ -40,13 +40,13 @@ const redMarkerIcon = L.divIcon({
     </svg>
   `,
   iconSize: [32, 40],
-  iconAnchor: [16, 40], // Anchor at the bottom center of the marker
-  popupAnchor: [0, -40], // Popup appears above the marker
+  iconAnchor: [16, 40],
+  popupAnchor: [0, -40],
 });
 
 // Create markers with custom red icon
 locations.forEach(loc => {
-  const latlng = map.unproject([loc.x, loc.y], 0); // Use zoom level 0 for CRS.Simple
+  const latlng = map.unproject([loc.x, loc.y], 0);
   const marker = L.marker(latlng, { icon: redMarkerIcon });
   marker.bindPopup(`Level ${loc.level}`);
   marker.on('click', () => startLevel(loc.level, loc.clue));
@@ -118,7 +118,6 @@ async function uploadToDrive() {
         }
       );
 
-      // Log raw response for debugging
       const responseText = await response.text();
       console.log("Raw response:", responseText);
 
@@ -155,8 +154,7 @@ function completeLevel() {
   updateScoreboard(`${team} (${className}) completed Level ${currentLevel}`);
 
   if (currentLevel === unlockedLevel) {
-    // Remove the current marker using its index
-    const currentMarker = markers[currentLevel - 1]; // Index is level - 1
+    const currentMarker = markers[currentLevel - 1];
     if (currentMarker) {
       console.log(`Removing marker for Level ${currentLevel}`);
       map.removeLayer(currentMarker);
@@ -164,9 +162,8 @@ function completeLevel() {
       console.log(`No marker found for Level ${currentLevel}`);
     }
 
-    // Increment unlocked level and add the next marker
     unlockedLevel++;
-    const nextMarker = markers[unlockedLevel - 1]; // Index is unlockedLevel - 1
+    const nextMarker = markers[unlockedLevel - 1];
     if (nextMarker) {
       console.log(`Adding marker for Level ${unlockedLevel}`);
       nextMarker.addTo(map);
@@ -185,7 +182,6 @@ function updateScoreboard(entry) {
   scoreboard.style.display = 'block';
 }
 
-// Debug: click to get pixel coords
 map.on('click', function (e) {
   const point = map.project(e.latlng, 0);
   console.log(`Clicked Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
