@@ -22,7 +22,6 @@ map.fitBounds(bounds);
 const locations = [
   { x: 1300, y: -476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
   { x: 1770, y: -492, clue: "🕰️ Where time flows backward?", level: 2 },
-  { x: 1500, y: -600, clue: "🌳 Discover the tree of wisdom!", level: 3 }
 ];
 
 let currentLevel = 0;
@@ -80,37 +79,17 @@ function startLevel(level, clue) {
   document.getElementById('clue-text').innerText = clue;
   document.getElementById('clue-box').style.display = 'block';
 
-  // Toggle upload inputs based on level
-  const manualUploadInput = document.getElementById('media-upload');
-  const manualUploadBtn = document.getElementById('manual-upload-btn');
-  const cameraUploadInput = document.getElementById('camera-upload');
-  const cameraUploadBtn = document.getElementById('camera-upload-btn');
-
-  if (level === 3) { // Use camera for Level 3
-    manualUploadInput.style.display = 'none';
-    manualUploadBtn.style.display = 'none';
-    cameraUploadInput.style.display = 'block';
-    cameraUploadBtn.style.display = 'block';
-    // Auto-trigger camera input on mobile devices
-    cameraUploadInput.click();
-  } else { // Use manual upload for Levels 1 and 2
-    manualUploadInput.style.display = 'block';
-    manualUploadBtn.style.display = 'block';
-    cameraUploadInput.style.display = 'none';
-    cameraUploadBtn.style.display = 'none';
-  }
-
   const completeBtn = document.getElementById('complete-level-btn');
   if (completeBtn) completeBtn.style.display = 'none';
 }
 
-async function uploadToDrive(useCamera = false) {
+async function uploadToDrive() {
   const overlay = document.getElementById("loading-overlay");
-  const fileInput = useCamera ? document.getElementById("camera-upload") : document.getElementById("media-upload");
+  const fileInput = document.getElementById("media-upload");
   const file = fileInput.files[0];
 
   if (!file) {
-    alert("Please capture or select a photo/video to upload.");
+    alert("Please select a photo or video to upload.");
     return;
   }
 
@@ -132,7 +111,7 @@ async function uploadToDrive(useCamera = false) {
 
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec",
+        "https://script.google.com/macros/s/AKfycbyF4Vn0FnFUD4Ay9hLh8bNLneJMFHvMsD1RyOtgNVLVLp4LtDkjoegGNGqY1LKxTQzySg/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
@@ -155,8 +134,6 @@ async function uploadToDrive(useCamera = false) {
         alert(`✅ Upload successful! File URL: ${result.fileUrl}`);
         const completeBtn = document.getElementById('complete-level-btn');
         if (completeBtn) completeBtn.style.display = 'inline-block';
-        // Clear the camera input to allow recapture
-        if (useCamera) fileInput.value = '';
       } else {
         alert(`❌ Upload failed: ${result.message}`);
       }
