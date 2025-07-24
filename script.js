@@ -4,37 +4,37 @@ const map = L.map('map', {
   minZoom: -1,
 });
 
-// 2. Define image dimensions (replace with your actual image size in pixels)
-const imageWidth = 2302; // width of ite.png
-const imageHeight = 1314; // height of ite.png
+// 2. Define image dimensions
+const imageWidth = 2302;
+const imageHeight = 1314;
 const bounds = [[0, 0], [imageHeight, imageWidth]];
 
-// 3. Add image overlay as the map
+// 3. Add image overlay
 L.imageOverlay('ite.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
-// 4. Define game locations with pixel coordinates (centered positions)
+// 4. Define game locations using center-relative coordinates
 const locations = [
-  { x: 1151, y: 600, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1151, y: 700, clue: "🕰️ Where time flows backward?", level: 2 },
+  // Level 1 slightly left of center
+  { x: 1050, y: 650, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  // Level 2 slightly right of center
+  { x: 1250, y: 650, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
 let currentLevel = 0;
 let unlockedLevel = 1; // start with only Level 1 unlocked
 const markers = [];
 
-// Create markers using provided coordinates
+// Convert pixel coordinates to map points and create markers
 locations.forEach(loc => {
   const latlng = map.unproject([loc.x, loc.y], map.getMaxZoom());
   const marker = L.marker(latlng);
   marker.bindPopup(`Level ${loc.level}`);
-  marker.on('click', () => {
-    startLevel(loc.level, loc.clue);
-  });
+  marker.on('click', () => startLevel(loc.level, loc.clue));
   markers.push(marker);
 });
 
-// Show first marker only
+// Show first marker
 markers[0].addTo(map);
 
 function startLevel(level, clue) {
@@ -111,9 +111,7 @@ function completeLevel() {
     unlockedLevel++;
     // Show next marker if exists
     const nextMarker = markers.find(m => m.getPopup().getContent() === `Level ${unlockedLevel}`);
-    if (nextMarker) {
-      nextMarker.addTo(map);
-    }
+    if (nextMarker) nextMarker.addTo(map);
   }
 }
 
@@ -126,7 +124,7 @@ function updateScoreboard(entry) {
   scoreboard.style.display = 'block';
 }
 
-// Optional: for debugging, show clicked pixel coords on map
+// Debug: Show clicked pixel coords
 map.on('click', function (e) {
   const point = map.project(e.latlng, 0);
   console.log(`Clicked Pixel Coordinates: x=${Math.round(point.x)}, y=${Math.round(point.y)}`);
