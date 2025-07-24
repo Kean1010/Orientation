@@ -51,7 +51,7 @@ locations.forEach(loc => {
   markers.push(marker);
 });
 
-// Show first marker after form submission
+// Show first marker and clue box after form submission
 console.log(`Initial unlockedLevel: ${unlockedLevel}`);
 
 // Handle team form submission
@@ -63,8 +63,9 @@ document.getElementById('team-form').addEventListener('submit', function (e) {
   if (teamName && className) {
     document.getElementById('team-form-overlay').style.display = 'none';
     document.getElementById('map').style.display = 'block';
-    console.log(`Adding first marker for Level 1`);
+    console.log(`Adding first marker for Level 1 and showing clue box`);
     markers[0].addTo(map); // Show first marker
+    startLevel(1, locations[0].clue); // Auto-show clue box for Level 1
   } else {
     alert('Please enter both team name and class.');
   }
@@ -170,9 +171,9 @@ async function uploadToDrive() {
     };
 
     try {
-      console.log('Sending upload request to Google Apps Script');
+      console.log('Sending upload request to proxy');
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec",
+        'https://your-proxy.vercel.app/api/proxy', // Replace with your Vercel proxy URL
         {
           method: "POST",
           body: JSON.stringify(payload),
@@ -244,6 +245,12 @@ function completeLevel() {
     if (nextMarker) {
       console.log(`Adding marker for Level ${unlockedLevel}`);
       nextMarker.addTo(map);
+      // Auto-show clue box for the next level
+      const nextLocation = locations[unlockedLevel - 1];
+      if (nextLocation) {
+        console.log(`Auto-showing clue box for Level ${unlockedLevel}`);
+        startLevel(nextLocation.level, nextLocation.clue);
+      }
     } else {
       console.log(`No marker found for Level ${unlockedLevel}`);
     }
