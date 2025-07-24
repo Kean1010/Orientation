@@ -58,25 +58,3 @@ button:hover {
   z-index: 1000;
 }
 
-/* Container inside the overlay to hold the form */
-#team-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  text-align: center;
-  width: 300px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
-}
-
-#team-form input {
-  width: 100%;
-  padding: 0.5rem;
-  margin: 0.5rem 0;
-  font-size: 1rem;
-}
-
-#team-form button {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  cursor: pointer;
-}
