@@ -1,3 +1,9 @@
+console.log("script.js loaded");
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('start-game-btn').addEventListener('click', submitTeamDetails);
+});
+
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -1,
@@ -20,8 +26,8 @@ const locations = [
 
 let currentLevel = 0;
 let unlockedLevel = 1;
-let teamName = '';
-let teamClass = '';
+let team = '';
+let className = '';
 const markers = [];
 
 // Define custom bright red marker icon
@@ -54,9 +60,9 @@ markers[0].addTo(map);
 document.getElementById('team-form-overlay').style.display = 'flex';
 
 function submitTeamDetails() {
-  teamName = document.getElementById('team-name').value.trim();
-  teamClass = document.getElementById('team-class').value.trim();
-  if (!teamName || !teamClass) {
+  team = document.getElementById('team-name').value.trim();
+  className = document.getElementById('team-class').value.trim();
+  if (!team || !className) {
     alert("Please enter both Team Name and Class.");
     return;
   }
@@ -93,10 +99,14 @@ async function uploadToDrive() {
 
   reader.onload = async function (e) {
     const base64Data = e.target.result.split(',')[1];
+    const timestamp = new Date().toISOString();
     const payload = {
-      filename: `Level${currentLevel}_${Date.now()}_${teamName}_${teamClass}_${file.name}`,
+      filename: `Level${currentLevel}_${Date.now()}_${team}_${className}_${file.name}`,
       type: file.type,
       data: base64Data,
+      team: team,
+      class: className,
+      timestamp: timestamp
     };
 
     try {
@@ -108,13 +118,13 @@ async function uploadToDrive() {
         }
       );
 
-      const result = await response.text();
-      if (result.includes("success")) {
-        alert("✅ Upload successful!");
+      const result = await response.json();
+      if (result.status === "success") {
+        alert(`✅ Upload successful! File URL: ${result.fileUrl}`);
         const completeBtn = document.getElementById('complete-level-btn');
         if (completeBtn) completeBtn.style.display = 'inline-block';
       } else {
-        alert("❌ " + result);
+        alert("❌ " + result.message);
       }
     } catch (error) {
       alert("❌ Upload failed: " + error.message);
@@ -129,7 +139,7 @@ async function uploadToDrive() {
 function completeLevel() {
   alert(`✅ Level ${currentLevel} completed!`);
   document.getElementById('clue-box').style.display = 'none';
-  updateScoreboard(`${teamName} (${teamClass}) completed Level ${currentLevel}`);
+  updateScoreboard(`${team} (${className}) completed Level ${currentLevel}`);
 
   if (currentLevel === unlockedLevel) {
     // Remove the current marker using its index
