@@ -14,8 +14,8 @@ map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
 const locations = [
-  { x: 1151, y: -650, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1300, y: -650, clue: "🕰️ Where time flows backward?", level: 2 },
+  { x: 1300, y: -476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1770, y: -492, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
 let currentLevel = 0;
@@ -117,6 +117,11 @@ function completeLevel() {
   updateScoreboard(`Player 1 completed Level ${currentLevel}`);
 
   if (currentLevel === unlockedLevel) {
+    // Remove the current marker
+    const currentMarker = markers.find(m => m.getPopup().getContent() === `Level ${currentLevel}`);
+    if (currentMarker) map.removeLayer(currentMarker);
+
+    // Increment unlocked level and add the next marker
     unlockedLevel++;
     const nextMarker = markers.find(m => m.getPopup().getContent() === `Level ${unlockedLevel}`);
     if (nextMarker) nextMarker.addTo(map);
