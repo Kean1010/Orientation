@@ -13,11 +13,9 @@ L.imageOverlay('ite.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
-// Changed negative y values to positive, as negative y places markers above the image (outside bounds).
-// Revert to -476, -492 if this was intentional.
 const locations = [
-  { x: 1300, y: 476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1770, y: 492, clue: "🕰️ Where time flows backward?", level: 2 },
+  { x: 1300, y: -476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1770, y: -492, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
 let currentLevel = 0;
@@ -84,7 +82,7 @@ async function uploadToDrive() {
     progressBar.style.marginTop = '20px';
 
     // Clear overlay content and add progress bar
-    overlay.innerHTML = '<div>Uploading...</div>';
+    overlay.innerHTML = '<div>Reading file...</div>';
     overlay.appendChild(progressBar);
     overlay.style.display = "flex";
   }
@@ -93,25 +91,24 @@ async function uploadToDrive() {
 
   reader.onprogress = function (e) {
     if (e.lengthComputable) {
-      const percentComplete = (e.loaded / e.total) * 100;
+      const percentComplete = (e.loaded / e.total) * 50; // Scale to 0-50% for file reading
       console.log(`File reading progress: ${percentComplete}%`);
       const progressBar = document.getElementById('upload-progress');
       if (progressBar) {
         progressBar.value = percentComplete;
       } else {
-        console.error('Progress bar element not found');
+        console.error('Progress bar element not found during file reading');
       }
     } else {
-      console.log('Progress event fired, but lengthComputable is false');
+      console.log('File reading progress event fired, but lengthComputable is false');
     }
   };
 
-  reader.onload = async function (e) {
-    // Set progress to 100% when file reading completes
-    const progressBar = document.getElementById('upload-progress');
-    if (progressBar) {
-      progressBar.value = 100;
-      console.log('File reading complete: Progress set to 100%');
+  reader.onload = function (e) {
+    // Update overlay text to indicate uploading phase
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+      overlay.firstChild.textContent = 'Uploading to server...';
     }
 
     const base64Data = e.target.result.split(',')[1];
@@ -121,31 +118,62 @@ async function uploadToDrive() {
       data: base64Data,
     };
 
-    try {
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec",
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-        }
-      );
+    // Use XMLHttpRequest for upload progress
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
 
-      const result = await response.text();
-      if (result.includes("success")) {
-        alert("✅ Upload successful!");
-        const completeBtn = document.getElementById('complete-level-btn');
-        if (completeBtn) completeBtn.style.display = 'inline-block';
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable) {
+        const percentComplete = 50 + (e.loaded / e.total) * 50; // Scale to 50-100% for network upload
+        console.log(`Network upload progress: ${percentComplete}%`);
+        const progressBar = document.getElementById('upload-progress');
+        if (progressBar) {
+          progressBar.value = percentComplete;
+        } else {
+          console.error('Progress bar element not found during network upload');
+        }
       } else {
-        alert("❌ " + result);
+        console.log('Network upload progress event fired, but lengthComputable is false');
       }
-    } catch (error) {
-      alert("❌ Upload failed: " + error.message);
-    } finally {
+    };
+
+    xhr.onload = function () {
+      const progressBar = document.getElementById('upload-progress');
+      if (progressBar) {
+        progressBar.value = 100; // Ensure 100% on completion
+        console.log('Upload complete: Progress set to 100%');
+      }
+
+      if (xhr.status === 200) {
+        const result = xhr.responseText;
+        if (result.includes("success")) {
+          alert("✅ Upload successful!");
+          const completeBtn = document.getElementById('complete-level-btn');
+          if (completeBtn) completeBtn.style.display = 'inline-block';
+        } else {
+          alert("❌ " + result);
+        }
+      } else {
+        alert("❌ Upload failed: Server returned status " + xhr.status);
+      }
+
       if (overlay) {
         overlay.style.display = "none";
         overlay.innerHTML = ''; // Clear progress bar
       }
-    }
+    };
+
+    xhr.onerror = function () {
+      console.error('XMLHttpRequest error:', xhr.statusText);
+      alert("❌ Upload failed: Network error");
+      if (overlay) {
+        overlay.style.display = "none";
+        overlay.innerHTML = '';
+      }
+    };
+
+    xhr.send(JSON.stringify(payload));
   };
 
   reader.onerror = function () {
