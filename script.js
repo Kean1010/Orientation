@@ -13,30 +13,18 @@ const bounds = [[0, 0], [imageHeight, imageWidth]];
 L.imageOverlay('ite.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
-// 4. Define game locations with pixel coordinates
-// NOTE: Y coordinates are adjusted by adding offset to ensure positive & valid coordinates within image
+// 4. Define game locations with pixel coordinates (centered positions)
 const locations = [
-  { x: 1507, y: -516, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1200, y: 700, clue: "🕰️ Where time flows backward?", level: 2 },
+  { x: 1151, y: 600, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1151, y: 700, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
-
-// Y offset calculated to shift negative y to positive within image height
-const yOffset = 516;
-
-// Correct coordinates by adding yOffset to each location's y
-const correctedLocations = locations.map(loc => ({
-  x: loc.x,
-  y: loc.y + yOffset,
-  clue: loc.clue,
-  level: loc.level,
-}));
 
 let currentLevel = 0;
 let unlockedLevel = 1; // start with only Level 1 unlocked
 const markers = [];
 
-// Create markers using corrected coordinates
-correctedLocations.forEach(loc => {
+// Create markers using provided coordinates
+locations.forEach(loc => {
   const latlng = map.unproject([loc.x, loc.y], map.getMaxZoom());
   const marker = L.marker(latlng);
   marker.bindPopup(`Level ${loc.level}`);
