@@ -117,14 +117,24 @@ function completeLevel() {
   updateScoreboard(`Player 1 completed Level ${currentLevel}`);
 
   if (currentLevel === unlockedLevel) {
-    // Remove the current marker
-    const currentMarker = markers.find(m => m.getPopup().getContent() === `Level ${currentLevel}`);
-    if (currentMarker) map.removeLayer(currentMarker);
+    // Remove the current marker using its index
+    const currentMarker = markers[currentLevel - 1]; // Index is level - 1
+    if (currentMarker) {
+      console.log(`Removing marker for Level ${currentLevel}`);
+      map.removeLayer(currentMarker);
+    } else {
+      console.log(`No marker found for Level ${currentLevel}`);
+    }
 
     // Increment unlocked level and add the next marker
     unlockedLevel++;
-    const nextMarker = markers.find(m => m.getPopup().getContent() === `Level ${unlockedLevel}`);
-    if (nextMarker) nextMarker.addTo(map);
+    const nextMarker = markers[unlockedLevel - 1]; // Index is unlockedLevel - 1
+    if (nextMarker) {
+      console.log(`Adding marker for Level ${unlockedLevel}`);
+      nextMarker.addTo(map);
+    } else {
+      console.log(`No marker found for Level ${unlockedLevel}`);
+    }
   }
 }
 
