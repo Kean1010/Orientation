@@ -20,6 +20,8 @@ const locations = [
 
 let currentLevel = 0;
 let unlockedLevel = 1;
+let teamName = '';
+let teamClass = '';
 const markers = [];
 
 // Define custom bright red marker icon
@@ -47,6 +49,19 @@ locations.forEach(loc => {
 
 // Show only first marker
 markers[0].addTo(map);
+
+// Show team form on page load
+document.getElementById('team-form-overlay').style.display = 'flex';
+
+function submitTeamDetails() {
+  teamName = document.getElementById('team-name').value.trim();
+  teamClass = document.getElementById('team-class').value.trim();
+  if (!teamName || !teamClass) {
+    alert("Please enter both Team Name and Class.");
+    return;
+  }
+  document.getElementById('team-form-overlay').style.display = 'none';
+}
 
 function startLevel(level, clue) {
   if (level !== unlockedLevel) {
@@ -79,7 +94,7 @@ async function uploadToDrive() {
   reader.onload = async function (e) {
     const base64Data = e.target.result.split(',')[1];
     const payload = {
-      filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
+      filename: `Level${currentLevel}_${Date.now()}_${teamName}_${teamClass}_${file.name}`,
       type: file.type,
       data: base64Data,
     };
@@ -114,7 +129,7 @@ async function uploadToDrive() {
 function completeLevel() {
   alert(`✅ Level ${currentLevel} completed!`);
   document.getElementById('clue-box').style.display = 'none';
-  updateScoreboard(`Player 1 completed Level ${currentLevel}`);
+  updateScoreboard(`${teamName} (${teamClass}) completed Level ${currentLevel}`);
 
   if (currentLevel === unlockedLevel) {
     // Remove the current marker using its index
