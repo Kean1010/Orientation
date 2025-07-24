@@ -125,14 +125,24 @@ function uploadToDrive() {
       className: className,
     };
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec', true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    // Create hidden form for POST
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec';
+    form.style.display = 'none';
 
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === XMLHttpRequest.DONE) {
-        console.log(`Upload response: ${xhr.responseText}`);
-        if (xhr.status === 200 && xhr.responseText.includes("success")) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'data';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    // Listen for form submission response via message event
+    window.addEventListener('message', function handler(event) {
+      if (event.origin === 'https://script.google.com') {
+        console.log(`Form response received: ${event.data}`);
+        if (event.data.includes("success")) {
           alert("✅ Upload successful!");
           const completeBtn = document.getElementById('complete-level-btn');
           if (completeBtn) {
@@ -142,18 +152,15 @@ function uploadToDrive() {
             console.error('Complete Level button not found after upload');
           }
         } else {
-          alert("❌ Upload failed: " + xhr.responseText);
+          alert("❌ Upload failed: " + event.data);
         }
+        document.body.removeChild(form);
+        window.removeEventListener('message', handler);
       }
-    };
+    });
 
-    xhr.onerror = function () {
-      console.error('XMLHttpRequest error:', xhr.statusText);
-      alert("❌ Upload failed: Network error");
-    };
-
-    console.log('Sending upload request to Google Apps Script');
-    xhr.send(JSON.stringify(payload));
+    console.log('Submitting form to Google Apps Script');
+    form.submit();
   };
 
   reader.onerror = function () {
