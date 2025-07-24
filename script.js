@@ -118,16 +118,29 @@ async function uploadToDrive() {
         }
       );
 
-      const result = await response.json();
+      // Log raw response for debugging
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        alert(`❌ Upload failed: Invalid server response - ${responseText}`);
+        return;
+      }
+
       if (result.status === "success") {
         alert(`✅ Upload successful! File URL: ${result.fileUrl}`);
         const completeBtn = document.getElementById('complete-level-btn');
         if (completeBtn) completeBtn.style.display = 'inline-block';
       } else {
-        alert("❌ " + result.message);
+        alert(`❌ Upload failed: ${result.message}`);
       }
     } catch (error) {
-      alert("❌ Upload failed: " + error.message);
+      console.error("Fetch error:", error);
+      alert(`❌ Upload failed: ${error.message}`);
     } finally {
       if (overlay) overlay.style.display = "none";
     }
