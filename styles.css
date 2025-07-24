@@ -47,14 +47,44 @@ button:hover {
   padding: 10px;
 }
 
-/* Team form overlay */
 #team-form-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.75);
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
+#team-form {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+#team-form label {
+  display: block;
+  margin: 10px 0 5px;
+}
+
+#team-form input {
+  width: 80%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  color: white;
+  font-size: 1.5em;
+}
