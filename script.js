@@ -72,51 +72,11 @@ async function uploadToDrive() {
     return;
   }
 
-  if (overlay) {
-    // Create progress bar
-    const progressBar = document.createElement('progress');
-    progressBar.id = 'upload-progress';
-    progressBar.max = 100;
-    progressBar.value = 0;
-    progressBar.style.width = '80%';
-    progressBar.style.marginTop = '20px';
-
-    // Clear overlay content and add progress bar
-    overlay.innerHTML = '<div>Processing file...</div>';
-    overlay.appendChild(progressBar);
-    overlay.style.display = "flex";
-  }
+  if (overlay) overlay.style.display = "flex";
 
   const reader = new FileReader();
 
-  reader.onprogress = function (e) {
-    if (e.lengthComputable) {
-      const percentComplete = (e.loaded / e.total) * 100;
-      console.log(`File reading progress: ${percentComplete}%`);
-      const progressBar = document.getElementById('upload-progress');
-      if (progressBar) {
-        progressBar.value = percentComplete;
-      } else {
-        console.error('Progress bar element not found during file reading');
-      }
-    } else {
-      console.log('File reading progress event fired, but lengthComputable is false');
-    }
-  };
-
   reader.onload = async function (e) {
-    // Set progress to 100% when file reading completes
-    const progressBar = document.getElementById('upload-progress');
-    if (progressBar) {
-      progressBar.value = 100;
-      console.log('File reading complete: Progress set to 100%');
-    }
-    // Update overlay text to indicate uploading phase
-    const overlay = document.getElementById("loading-overlay");
-    if (overlay) {
-      overlay.firstChild.textContent = 'Uploading to server...';
-    }
-
     const base64Data = e.target.result.split(',')[1];
     const payload = {
       filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
@@ -130,10 +90,6 @@ async function uploadToDrive() {
         {
           method: "POST",
           body: JSON.stringify(payload),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          mode: 'cors', // Explicitly set CORS mode
         }
       );
 
@@ -146,22 +102,9 @@ async function uploadToDrive() {
         alert("❌ " + result);
       }
     } catch (error) {
-      console.error('Fetch error:', error.message);
       alert("❌ Upload failed: " + error.message);
     } finally {
-      if (overlay) {
-        overlay.style.display = "none";
-        overlay.innerHTML = ''; // Clear progress bar
-      }
-    }
-  };
-
-  reader.onerror = function () {
-    console.error('FileReader error:', reader.error);
-    alert("❌ File reading failed: " + reader.error.message);
-    if (overlay) {
-      overlay.style.display = "none";
-      overlay.innerHTML = '';
+      if (overlay) overlay.style.display = "none";
     }
   };
 
