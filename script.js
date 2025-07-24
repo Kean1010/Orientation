@@ -14,18 +14,32 @@ map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
 const locations = [
-  { x: 1151, y: -650, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1300, y: -650, clue: "🕰️ Where time flows backward?", level: 2 },
+  { x: 1151, y: 650, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1300, y: 650, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
 let currentLevel = 0;
 let unlockedLevel = 1;
 const markers = [];
 
-// Create markers
+// Define custom bright red marker icon
+const redMarkerIcon = L.divIcon({
+  className: 'custom-marker',
+  html: `
+    <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 0C7.16 0 0 7.16 0 16c0 8.84 16 24 16 24s16-15.16 16-24C32 7.16 24.84 0 16 0z" fill="#FF0000" />
+      <circle cx="16" cy="16" r="5" fill="#FFFFFF" />
+    </svg>
+  `,
+  iconSize: [32, 40],
+  iconAnchor: [16, 40], // Anchor at the bottom center of the marker
+  popupAnchor: [0, -40], // Popup appears above the marker
+});
+
+// Create markers with custom red icon
 locations.forEach(loc => {
   const latlng = map.unproject([loc.x, loc.y], 0); // Use zoom level 0 for CRS.Simple
-  const marker = L.marker(latlng);
+  const marker = L.marker(latlng, { icon: redMarkerIcon });
   marker.bindPopup(`Level ${loc.level}`);
   marker.on('click', () => startLevel(loc.level, loc.clue));
   markers.push(marker);
