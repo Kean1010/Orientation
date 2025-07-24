@@ -13,9 +13,11 @@ L.imageOverlay('ite.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
+// Changed negative y values to positive, as negative y places markers above the image (outside bounds).
+// Revert to -476, -492 if this was intentional.
 const locations = [
-  { x: 1300, y: -476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1770, y: -492, clue: "🕰️ Where time flows backward?", level: 2 },
+  { x: 1300, y: 476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1770, y: 492, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
 let currentLevel = 0;
@@ -92,14 +94,26 @@ async function uploadToDrive() {
   reader.onprogress = function (e) {
     if (e.lengthComputable) {
       const percentComplete = (e.loaded / e.total) * 100;
+      console.log(`File reading progress: ${percentComplete}%`);
       const progressBar = document.getElementById('upload-progress');
       if (progressBar) {
         progressBar.value = percentComplete;
+      } else {
+        console.error('Progress bar element not found');
       }
+    } else {
+      console.log('Progress event fired, but lengthComputable is false');
     }
   };
 
   reader.onload = async function (e) {
+    // Set progress to 100% when file reading completes
+    const progressBar = document.getElementById('upload-progress');
+    if (progressBar) {
+      progressBar.value = 100;
+      console.log('File reading complete: Progress set to 100%');
+    }
+
     const base64Data = e.target.result.split(',')[1];
     const payload = {
       filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
@@ -131,6 +145,15 @@ async function uploadToDrive() {
         overlay.style.display = "none";
         overlay.innerHTML = ''; // Clear progress bar
       }
+    }
+  };
+
+  reader.onerror = function () {
+    console.error('FileReader error:', reader.error);
+    alert("❌ File reading failed: " + reader.error.message);
+    if (overlay) {
+      overlay.style.display = "none";
+      overlay.innerHTML = '';
     }
   };
 
