@@ -14,8 +14,8 @@ map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
 const locations = [
-  { x: 1300, y: -476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1770, y: -492, clue: "🕰️ Where time flows backward?", level: 2 },
+  { x: 1300, y: 476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1770, y: 492, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
 let currentLevel = 0;
@@ -41,38 +41,65 @@ const redMarkerIcon = L.divIcon({
 // Create markers with custom red icon
 locations.forEach(loc => {
   const latlng = map.unproject([loc.x, loc.y], 0); // Use zoom level 0 for CRS.Simple
+  console.log(`Creating marker for Level ${loc.level} at x=${loc.x}, y=${loc.y}`);
   const marker = L.marker(latlng, { icon: redMarkerIcon });
   marker.bindPopup(`Level ${loc.level}`);
-  marker.on('click', () => startLevel(loc.level, loc.clue));
+  marker.on('click', () => {
+    console.log(`Marker clicked for Level ${loc.level}, clue: ${loc.clue}`);
+    startLevel(loc.level, loc.clue);
+  });
   markers.push(marker);
 });
+
+// Show first marker after form submission
+console.log(`Initial unlockedLevel: ${unlockedLevel}`);
 
 // Handle team form submission
 document.getElementById('team-form').addEventListener('submit', function (e) {
   e.preventDefault();
   teamName = document.getElementById('team-name').value.trim();
   className = document.getElementById('class-name').value.trim();
+  console.log(`Team form submitted: teamName=${teamName}, className=${className}`);
   if (teamName && className) {
     document.getElementById('team-form-overlay').style.display = 'none';
     document.getElementById('map').style.display = 'block';
-    markers[0].addTo(map); // Show first marker after form submission
+    console.log(`Adding first marker for Level 1`);
+    markers[0].addTo(map); // Show first marker
   } else {
     alert('Please enter both team name and class.');
   }
 });
 
 function startLevel(level, clue) {
+  console.log(`startLevel called: level=${level}, clue=${clue}, unlockedLevel=${unlockedLevel}`);
   if (level !== unlockedLevel) {
+    console.log(`Level ${level} is locked. Current unlockedLevel: ${unlockedLevel}`);
     alert("🚫 You must unlock this level first!");
     return;
   }
   currentLevel = level;
-  document.getElementById('clue-title').innerText = `Level ${level}`;
-  document.getElementById('clue-text').innerText = clue;
-  document.getElementById('clue-box').style.display = 'block';
-
+  console.log(`Setting currentLevel to ${currentLevel}`);
+  const clueTitle = document.getElementById('clue-title');
+  const clueText = document.getElementById('clue-text');
+  const clueBox = document.getElementById('clue-box');
   const completeBtn = document.getElementById('complete-level-btn');
-  if (completeBtn) completeBtn.style.display = 'none';
+
+  if (clueTitle && clueText && clueBox) {
+    clueTitle.innerText = `Level ${level}`;
+    clueText.innerText = clue;
+    clueBox.style.display = 'block';
+    console.log(`Clue box displayed for Level ${level}`);
+  } else {
+    console.error('Clue box elements not found:', { clueTitle, clueText, clueBox });
+    alert('Error: Clue box elements not found. Check HTML.');
+  }
+
+  if (completeBtn) {
+    completeBtn.style.display = 'none';
+    console.log('Complete Level button hidden');
+  } else {
+    console.error('Complete Level button not found');
+  }
 }
 
 async function uploadToDrive() {
@@ -98,6 +125,9 @@ async function uploadToDrive() {
     overlay.innerHTML = '<div>Processing file...</div>';
     overlay.appendChild(progressBar);
     overlay.style.display = "flex";
+    console.log('Loading overlay displayed with progress bar');
+  } else {
+    console.error('Loading overlay not found');
   }
 
   const reader = new FileReader();
@@ -140,6 +170,7 @@ async function uploadToDrive() {
     };
 
     try {
+      console.log('Sending upload request to Google Apps Script');
       const response = await fetch(
         "https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec",
         {
@@ -153,10 +184,16 @@ async function uploadToDrive() {
       );
 
       const result = await response.text();
+      console.log(`Upload response: ${result}`);
       if (result.includes("success")) {
         alert("✅ Upload successful!");
         const completeBtn = document.getElementById('complete-level-btn');
-        if (completeBtn) completeBtn.style.display = 'inline-block';
+        if (completeBtn) {
+          completeBtn.style.display = 'inline-block';
+          console.log('Complete Level button displayed');
+        } else {
+          console.error('Complete Level button not found after upload');
+        }
       } else {
         alert("❌ " + result);
       }
@@ -167,6 +204,7 @@ async function uploadToDrive() {
       if (overlay) {
         overlay.style.display = "none";
         overlay.innerHTML = ''; // Clear progress bar
+        console.log('Loading overlay hidden');
       }
     }
   };
@@ -184,6 +222,7 @@ async function uploadToDrive() {
 }
 
 function completeLevel() {
+  console.log(`Completing Level ${currentLevel}`);
   alert(`✅ Level ${currentLevel} completed!`);
   document.getElementById('clue-box').style.display = 'none';
   updateScoreboard(`${teamName} completed Level ${currentLevel}`);
@@ -200,6 +239,7 @@ function completeLevel() {
 
     // Increment unlocked level and add the next marker
     unlockedLevel++;
+    console.log(`Incremented unlockedLevel to ${unlockedLevel}`);
     const nextMarker = markers[unlockedLevel - 1]; // Index is unlockedLevel - 1
     if (nextMarker) {
       console.log(`Adding marker for Level ${unlockedLevel}`);
@@ -211,6 +251,7 @@ function completeLevel() {
 }
 
 function updateScoreboard(entry) {
+  console.log(`Updating scoreboard with entry: ${entry}`);
   const scoreboard = document.getElementById('scoreboard');
   const scoreList = document.getElementById('score-list');
   const li = document.createElement('li');
