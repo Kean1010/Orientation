@@ -1,17 +1,4 @@
 
-
-SearchCtrl+K
-Chat
-Ctrl+J
-Voice
-Files
-Tasks
-Projects
-History
-Today
-Yesterday
-This Week
-July
 // 1. Use CRS.Simple for image-based map
 const map = L.map('map', {
   crs: L.CRS.Simple,
