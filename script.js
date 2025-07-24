@@ -14,12 +14,14 @@ map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
 const locations = [
-  { x: 1300, y: -476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1770, y: -492, clue: "🕰️ Where time flows backward?", level: 2 },
+  { x: 1300, y: 476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1770, y: 492, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
 let currentLevel = 0;
 let unlockedLevel = 1;
+let teamName = '';
+let className = '';
 const markers = [];
 
 // Define custom bright red marker icon
@@ -45,8 +47,19 @@ locations.forEach(loc => {
   markers.push(marker);
 });
 
-// Show only first marker
-markers[0].addTo(map);
+// Handle team form submission
+document.getElementById('team-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  teamName = document.getElementById('team-name').value.trim();
+  className = document.getElementById('class-name').value.trim();
+  if (teamName && className) {
+    document.getElementById('team-form-overlay').style.display = 'none';
+    document.getElementById('map').style.display = 'block';
+    markers[0].addTo(map); // Show first marker after form submission
+  } else {
+    alert('Please enter both team name and class.');
+  }
+});
 
 function startLevel(level, clue) {
   if (level !== unlockedLevel) {
@@ -72,16 +85,58 @@ async function uploadToDrive() {
     return;
   }
 
-  if (overlay) overlay.style.display = "flex";
+  if (overlay) {
+    // Create progress bar
+    const progressBar = document.createElement('progress');
+    progressBar.id = 'upload-progress';
+    progressBar.max = 100;
+    progressBar.value = 0;
+    progressBar.style.width = '80%';
+    progressBar.style.marginTop = '20px';
+
+    // Clear overlay content and add progress bar
+    overlay.innerHTML = '<div>Processing file...</div>';
+    overlay.appendChild(progressBar);
+    overlay.style.display = "flex";
+  }
 
   const reader = new FileReader();
 
+  reader.onprogress = function (e) {
+    if (e.lengthComputable) {
+      const percentComplete = (e.loaded / e.total) * 100;
+      console.log(`File reading progress: ${percentComplete}%`);
+      const progressBar = document.getElementById('upload-progress');
+      if (progressBar) {
+        progressBar.value = percentComplete;
+      } else {
+        console.error('Progress bar element not found during file reading');
+      }
+    } else {
+      console.log('File reading progress event fired, but lengthComputable is false');
+    }
+  };
+
   reader.onload = async function (e) {
+    // Set progress to 100% when file reading completes
+    const progressBar = document.getElementById('upload-progress');
+    if (progressBar) {
+      progressBar.value = 100;
+      console.log('File reading complete: Progress set to 100%');
+    }
+    // Update overlay text to indicate uploading phase
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+      overlay.firstChild.textContent = 'Uploading to server...';
+    }
+
     const base64Data = e.target.result.split(',')[1];
     const payload = {
-      filename: `Level${currentLevel}_${Date.now()}_${file.name}`,
+      filename: `Level${currentLevel}_${teamName}_${className}_${Date.now()}_${file.name}`,
       type: file.type,
       data: base64Data,
+      teamName: teamName,
+      className: className,
     };
 
     try {
@@ -90,6 +145,10 @@ async function uploadToDrive() {
         {
           method: "POST",
           body: JSON.stringify(payload),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          mode: 'cors',
         }
       );
 
@@ -102,9 +161,22 @@ async function uploadToDrive() {
         alert("❌ " + result);
       }
     } catch (error) {
+      console.error('Fetch error:', error.message);
       alert("❌ Upload failed: " + error.message);
     } finally {
-      if (overlay) overlay.style.display = "none";
+      if (overlay) {
+        overlay.style.display = "none";
+        overlay.innerHTML = ''; // Clear progress bar
+      }
+    }
+  };
+
+  reader.onerror = function () {
+    console.error('FileReader error:', reader.error);
+    alert("❌ File reading failed: " + reader.error.message);
+    if (overlay) {
+      overlay.style.display = "none";
+      overlay.innerHTML = '';
     }
   };
 
@@ -114,7 +186,7 @@ async function uploadToDrive() {
 function completeLevel() {
   alert(`✅ Level ${currentLevel} completed!`);
   document.getElementById('clue-box').style.display = 'none';
-  updateScoreboard(`Player 1 completed Level ${currentLevel}`);
+  updateScoreboard(`${teamName} completed Level ${currentLevel}`);
 
   if (currentLevel === unlockedLevel) {
     // Remove the current marker using its index
@@ -143,6 +215,8 @@ function updateScoreboard(entry) {
   const scoreList = document.getElementById('score-list');
   const li = document.createElement('li');
   li.textContent = entry;
+  li.setAttribute('data-team', teamName); // Add team name as data attribute
+  li.setAttribute('data-class', className); // Add class as data attribute
   scoreList.appendChild(li);
   scoreboard.style.display = 'block';
 }
