@@ -29,7 +29,9 @@
     <p id="clue-text">Clue will appear here</p>
     <div class="upload-area">
       <input type="file" id="media-upload" accept="image/*,video/*">
-      <button onclick="uploadToDrive()">Submit Upload</button>
+      <button id="manual-upload-btn" onclick="uploadToDrive()">Submit Upload</button>
+      <input type="file" id="camera-upload" accept="image/*,video/*" capture="environment" style="display: none;">
+      <button id="camera-upload-btn" onclick="uploadToDrive(true)" style="display: none;">Capture and Upload</button>
     </div>
     <button id="complete-level-btn" onclick="completeLevel()" style="display: none;">Mark Level Complete</button>
   </div>
