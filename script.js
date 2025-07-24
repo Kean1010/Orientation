@@ -111,7 +111,7 @@ async function uploadToDrive() {
 
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec",
+        "https://script.google.com/macros/s/AKfycbzETDRVCYM8aGM6xm8T4OVWAkPZjmRGGXeQn8lvAz-Ofxj-_M7qQqLJudltldPaKlczxQ/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
