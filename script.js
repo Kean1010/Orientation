@@ -82,7 +82,7 @@ async function uploadToDrive() {
     progressBar.style.marginTop = '20px';
 
     // Clear overlay content and add progress bar
-    overlay.innerHTML = '<div>Reading file...</div>';
+    overlay.innerHTML = '<div>Processing file...</div>';
     overlay.appendChild(progressBar);
     overlay.style.display = "flex";
   }
@@ -91,7 +91,7 @@ async function uploadToDrive() {
 
   reader.onprogress = function (e) {
     if (e.lengthComputable) {
-      const percentComplete = (e.loaded / e.total) * 50; // Scale to 0-50% for file reading
+      const percentComplete = (e.loaded / e.total) * 100;
       console.log(`File reading progress: ${percentComplete}%`);
       const progressBar = document.getElementById('upload-progress');
       if (progressBar) {
@@ -104,7 +104,13 @@ async function uploadToDrive() {
     }
   };
 
-  reader.onload = function (e) {
+  reader.onload = async function (e) {
+    // Set progress to 100% when file reading completes
+    const progressBar = document.getElementById('upload-progress');
+    if (progressBar) {
+      progressBar.value = 100;
+      console.log('File reading complete: Progress set to 100%');
+    }
     // Update overlay text to indicate uploading phase
     const overlay = document.getElementById("loading-overlay");
     if (overlay) {
@@ -118,62 +124,36 @@ async function uploadToDrive() {
       data: base64Data,
     };
 
-    // Use XMLHttpRequest for upload progress
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec', true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-
-    xhr.upload.onprogress = function (e) {
-      if (e.lengthComputable) {
-        const percentComplete = 50 + (e.loaded / e.total) * 50; // Scale to 50-100% for network upload
-        console.log(`Network upload progress: ${percentComplete}%`);
-        const progressBar = document.getElementById('upload-progress');
-        if (progressBar) {
-          progressBar.value = percentComplete;
-        } else {
-          console.error('Progress bar element not found during network upload');
+    try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec",
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          mode: 'cors', // Explicitly set CORS mode
         }
+      );
+
+      const result = await response.text();
+      if (result.includes("success")) {
+        alert("✅ Upload successful!");
+        const completeBtn = document.getElementById('complete-level-btn');
+        if (completeBtn) completeBtn.style.display = 'inline-block';
       } else {
-        console.log('Network upload progress event fired, but lengthComputable is false');
+        alert("❌ " + result);
       }
-    };
-
-    xhr.onload = function () {
-      const progressBar = document.getElementById('upload-progress');
-      if (progressBar) {
-        progressBar.value = 100; // Ensure 100% on completion
-        console.log('Upload complete: Progress set to 100%');
-      }
-
-      if (xhr.status === 200) {
-        const result = xhr.responseText;
-        if (result.includes("success")) {
-          alert("✅ Upload successful!");
-          const completeBtn = document.getElementById('complete-level-btn');
-          if (completeBtn) completeBtn.style.display = 'inline-block';
-        } else {
-          alert("❌ " + result);
-        }
-      } else {
-        alert("❌ Upload failed: Server returned status " + xhr.status);
-      }
-
+    } catch (error) {
+      console.error('Fetch error:', error.message);
+      alert("❌ Upload failed: " + error.message);
+    } finally {
       if (overlay) {
         overlay.style.display = "none";
         overlay.innerHTML = ''; // Clear progress bar
       }
-    };
-
-    xhr.onerror = function () {
-      console.error('XMLHttpRequest error:', xhr.statusText);
-      alert("❌ Upload failed: Network error");
-      if (overlay) {
-        overlay.style.display = "none";
-        overlay.innerHTML = '';
-      }
-    };
-
-    xhr.send(JSON.stringify(payload));
+    }
   };
 
   reader.onerror = function () {
