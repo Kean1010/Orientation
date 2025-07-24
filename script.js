@@ -14,8 +14,8 @@ map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
 const locations = [
-  { x: 1300, y: -476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
-  { x: 1770, y: -492, clue: "🕰️ Where time flows backward?", level: 2 },
+  { x: 1300, y: 476, clue: "📚 Find the lion that guards the knowledge!", level: 1 },
+  { x: 1770, y: 492, clue: "🕰️ Where time flows backward?", level: 2 },
 ];
 
 let currentLevel = 0;
@@ -86,7 +86,7 @@ function startLevel(level, clue) {
   }
 }
 
-// **Updated Upload using fetch + JSON**
+// **CORS-Safe Upload using form-encoded POST**
 function uploadToDrive() {
   const fileInput = document.getElementById("media-upload");
   const file = fileInput.files[0];
@@ -110,8 +110,8 @@ function uploadToDrive() {
 
     fetch("https://script.google.com/macros/s/AKfycbya3gVaouVUDa_xL316_hwqJFuHtxCI1rJwq1U_miz4TtVsY73XGjv_GDLDFVjuo-H3MA/exec", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "data=" + encodeURIComponent(JSON.stringify(payload))
     })
     .then(response => response.text())
     .then(text => {
