@@ -30,6 +30,16 @@ body {
 
 button {
   margin-top: 10px;
+  padding: 10px 20px;
+  background: #FF0000; /* Bright red to match markers */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #CC0000; /* Darker red on hover */
 }
 
 .game-title {
@@ -74,4 +84,48 @@ button {
 #upload-progress::-moz-progress-bar {
   background: #FF0000; /* Bright red for Firefox */
   border-radius: 10px;
+}
+
+/* Team form overlay */
+#team-form-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+}
+
+#team-form-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 80%;
+  max-width: 400px;
+}
+
+#team-form-container h2 {
+  margin-top: 0;
+  color: #FF0000; /* Bright red to match theme */
+}
+
+#team-form label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+#team-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#team-form button {
+  width: 100%;
 }
