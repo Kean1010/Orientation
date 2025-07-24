@@ -1,46 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Orientation Game</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-  <h2 class="game-title">Orientation Game</h2>
-
-  <!-- Team & Class input overlay -->
+  <h1 class="game-title">Orientation Treasure Hunt</h1>
   <div id="team-form-overlay">
-    <form id="team-form">
-      <h3>Enter Team & Class</h3>
-      <input type="text" id="team-name" placeholder="Team Name" required />
-      <input type="text" id="class-name" placeholder="Class" required />
-      <button type="submit">Start Game</button>
-    </form>
-  </div>
-
-  <div id="map"></div>
-
-  <div id="clue-box">
-    <h3 id="clue-title">Level Title</h3>
-    <p id="clue-text">Clue will appear here</p>
-    <div class="upload-area">
-      <input type="file" id="media-upload" accept="image/*,video/*"/>
-      <button onclick="uploadToDrive()">Submit Upload</button>
+    <div id="team-form-container">
+      <h2>Enter Team Details</h2>
+      <form id="team-form">
+        <label for="team-name">Team Name:</label>
+        <input type="text" id="team-name" required>
+        <label for="class-name">Class:</label>
+        <input type="text" id="class-name" required>
+        <button type="submit">Start Game</button>
+      </form>
     </div>
-    <button id="complete-level-btn" style="display:none;" onclick="completeLevel()">Mark Level Complete</button>
   </div>
-
-  <div id="scoreboard">
-    <h3>Scoreboard</h3>
+  <div id="map" style="display: none;"></div>
+  <div id="clue-box">
+    <h2 id="clue-title"></h2>
+    <p id="clue-text"></p>
+    <div class="upload-area">
+      <input type="file" id="media-upload" accept="image/*,video/*">
+      <button onclick="uploadToDrive()">Upload</button>
+    </div>
+    <button id="complete-level-btn" style="display: none;">Complete Level</button>
+  </div>
+  <div id="scoreboard" style="display: none;">
+    <h2>Scoreboard</h2>
     <ul id="score-list"></ul>
   </div>
-
-  <!-- Loading overlay -->
-  <div id="loading-overlay" style="display:none;">Uploading file, please wait...</div>
-
+  <div id="loading-overlay"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
 </body>
