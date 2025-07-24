@@ -72,9 +72,32 @@ async function uploadToDrive() {
     return;
   }
 
-  if (overlay) overlay.style.display = "flex";
+  if (overlay) {
+    // Create progress bar
+    const progressBar = document.createElement('progress');
+    progressBar.id = 'upload-progress';
+    progressBar.max = 100;
+    progressBar.value = 0;
+    progressBar.style.width = '80%';
+    progressBar.style.marginTop = '20px';
+
+    // Clear overlay content and add progress bar
+    overlay.innerHTML = '<div>Uploading...</div>';
+    overlay.appendChild(progressBar);
+    overlay.style.display = "flex";
+  }
 
   const reader = new FileReader();
+
+  reader.onprogress = function (e) {
+    if (e.lengthComputable) {
+      const percentComplete = (e.loaded / e.total) * 100;
+      const progressBar = document.getElementById('upload-progress');
+      if (progressBar) {
+        progressBar.value = percentComplete;
+      }
+    }
+  };
 
   reader.onload = async function (e) {
     const base64Data = e.target.result.split(',')[1];
@@ -104,7 +127,10 @@ async function uploadToDrive() {
     } catch (error) {
       alert("❌ Upload failed: " + error.message);
     } finally {
-      if (overlay) overlay.style.display = "none";
+      if (overlay) {
+        overlay.style.display = "none";
+        overlay.innerHTML = ''; // Clear progress bar
+      }
     }
   };
 
