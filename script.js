@@ -79,8 +79,15 @@ function startLevel(level, clue) {
   document.getElementById('clue-text').innerText = clue;
   document.getElementById('clue-box').style.display = 'block';
 
+  // Hide and disable Complete Level button initially
   const completeBtn = document.getElementById('complete-level-btn');
-  if (completeBtn) completeBtn.style.display = 'none';
+  if (completeBtn) {
+    completeBtn.style.display = 'none';
+    completeBtn.disabled = true;
+  }
+
+  // Clear previous file selection when starting new level
+  document.getElementById("media-upload").value = "";
 }
 
 async function uploadToDrive() {
@@ -126,20 +133,23 @@ async function uploadToDrive() {
         result = JSON.parse(responseText);
       } catch (parseError) {
         console.error("JSON parse error:", parseError);
-        alert(`❌ Upload failed: Invalid server response - ${responseText}`);
+        alert("❌ Upload failed.");
         return;
       }
 
       if (result.status === "success") {
-        alert(`✅ Upload successful! File URL: ${result.fileUrl}`);
+        alert("✅ Upload successful!");
         const completeBtn = document.getElementById('complete-level-btn');
-        if (completeBtn) completeBtn.style.display = 'inline-block';
+        if (completeBtn) {
+          completeBtn.style.display = 'inline-block';
+          completeBtn.disabled = false; // Enable only after successful upload
+        }
       } else {
-        alert(`❌ Upload failed: ${result.message}`);
+        alert("❌ Upload failed. Please try again.");
       }
     } catch (error) {
       console.error("Fetch error:", error);
-      alert(`❌ Upload failed: ${error.message}`);
+      alert("❌ Upload failed.");
     } finally {
       if (overlay) overlay.style.display = "none";
     }
@@ -171,6 +181,9 @@ function completeLevel() {
       console.log(`No marker found for Level ${unlockedLevel}`);
     }
   }
+
+  // Clear file input after level completion
+  document.getElementById("media-upload").value = "";
 }
 
 function updateScoreboard(entry) {
