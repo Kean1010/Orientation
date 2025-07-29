@@ -36,14 +36,17 @@
     <h2>Stage Title</h2>
   </div>
   <div id="map"></div>
-  <div id="clue-box">
-    <h3 id="clue-title">Stage Title</h3>
-    <p id="clue-text">Clue will appear here</p>
-    <div class="upload-area">
-      <input type="file" id="media-upload" accept="image/*,video/*">
-      <button onclick="uploadToDrive()">Submit Upload</button>
+  <div id="clue-overlay">
+    <div id="clue-box">
+      <h3 id="clue-title">Stage Title</h3>
+      <p id="clue-text">Clue will appear here</p>
+      <div class="upload-area">
+        <input type="file" id="media-upload" accept="image/*,video/*">
+        <button onclick="uploadToDrive()">Submit Upload</button>
+      </div>
+      <button id="complete-level-btn" onclick="completeStage()">Mark Stage Complete</button>
+      <button id="close-clue-btn" onclick="closeClue()">Close</button>
     </div>
-    <button id="complete-level-btn" onclick="completeStage()">Mark Stage Complete</button>
   </div>
 
   <div id="scoreboard">
