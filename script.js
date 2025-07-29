@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
           marker.addTo(map); // Add marker for the current unlocked stage
         }
       });
+      // Enable certificate button if game is completed
+      if (unlockedStage > locations.length) {
+        document.getElementById('recall-certificate-btn').disabled = false;
+      }
     }
 
     // Restore scoreboard
@@ -230,6 +234,7 @@ function completeStage() {
     document.getElementById('certificate-class').textContent = className;
     document.getElementById('certificate-date').textContent = new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' });
     document.getElementById('certificate-overlay').style.display = 'flex';
+    document.getElementById('recall-certificate-btn').disabled = false; // Enable certificate button
   }
 
   // Clear file input after stage completion
