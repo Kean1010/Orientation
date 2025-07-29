@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Restore scoreboard
-    savedScores.forEach(entry => updateScoreboard(entry));
+    savedScores.forEach(entry => updateScoreboard(entry, false));
   } else {
     // Show team form if no saved details
     document.getElementById('team-form-overlay').style.display = 'flex';
@@ -58,7 +58,7 @@ map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
 const locations = [
-  { x: 1766, y: -866, clue: "📚I’m full of stories but never speak, Quiet footsteps are what I seek. Climb up or walk in, rows of knowledge in sight, Snap your welfie where students read and write! Task: Take a welfie with everyone holding up their favourite book title in a funny pose.", stage: 1 },
+  { x: 1766, y: -866, clue: "📚 Find the place that have unlimited knowledge, Section L32 will be your door, Red and White cover - page 238 is your clue, read the passage, record it and upload for points", stage: 1 },
   { x: 1630, y: -510, clue: "🕰️ This is the history of the school, take a welfie with it and upload for points", stage: 2 },
 ];
 
@@ -224,22 +224,39 @@ function completeStage() {
   localStorage.setItem('currentStage', currentStage);
   localStorage.setItem('unlockedStage', unlockedStage);
 
+  // Check if all stages are completed
+  if (unlockedStage > locations.length) {
+    document.getElementById('certificate-overlay').style.display = 'flex';
+  }
+
   // Clear file input after stage completion
   document.getElementById("media-upload").value = "";
 }
 
-function updateScoreboard(entry) {
+function updateScoreboard(entry, save = true) {
   const scoreboard = document.getElementById('scoreboard');
   const scoreList = document.getElementById('score-list');
+  
+  // Prevent duplicate entries
+  const currentScores = JSON.parse(localStorage.getItem('scoreboard') || '[]');
+  if (currentScores.includes(entry)) {
+    return; // Skip if entry already exists
+  }
+
   const li = document.createElement('li');
   li.textContent = entry;
   scoreList.appendChild(li);
   scoreboard.style.display = 'block';
 
-  // Save scoreboard to localStorage
-  const currentScores = JSON.parse(localStorage.getItem('scoreboard') || '[]');
-  currentScores.push(entry);
-  localStorage.setItem('scoreboard', JSON.stringify(currentScores));
+  // Save scoreboard to localStorage if not loading from saved state
+  if (save) {
+    currentScores.push(entry);
+    localStorage.setItem('scoreboard', JSON.stringify(currentScores));
+  }
+}
+
+function closeCertificate() {
+  document.getElementById('certificate-overlay').style.display = 'none';
 }
 
 map.on('click', function (e) {
