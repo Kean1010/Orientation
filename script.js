@@ -1,6 +1,44 @@
 console.log("script.js loaded");
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Retrieve saved team and game state from localStorage
+  const savedTeam = localStorage.getItem('team');
+  const savedClass = localStorage.getItem('className');
+  const savedCurrentStage = localStorage.getItem('currentStage');
+  const savedUnlockedStage = localStorage.getItem('unlockedStage');
+  const savedScores = JSON.parse(localStorage.getItem('scoreboard') || '[]');
+  const teamInput = document.getElementById('team-name');
+  const classInput = document.getElementById('team-class');
+
+  if (savedTeam && savedClass) {
+    // Pre-fill form and restore game state
+    teamInput.value = savedTeam;
+    classInput.value = savedClass;
+    team = savedTeam;
+    className = savedClass;
+    document.getElementById('team-form-overlay').style.display = 'none';
+
+    // Restore stage progress
+    if (savedCurrentStage) currentStage = parseInt(savedCurrentStage);
+    if (savedUnlockedStage) {
+      unlockedStage = parseInt(savedUnlockedStage);
+      // Update map markers based on unlockedStage
+      markers.forEach((marker, index) => {
+        if (index < unlockedStage - 1) {
+          map.removeLayer(marker); // Remove markers for completed stages
+        } else if (index === unlockedStage - 1) {
+          marker.addTo(map); // Add marker for the current unlocked stage
+        }
+      });
+    }
+
+    // Restore scoreboard
+    savedScores.forEach(entry => updateScoreboard(entry));
+  } else {
+    // Show team form if no saved details
+    document.getElementById('team-form-overlay').style.display = 'flex';
+  }
+
   document.getElementById('start-game-btn').addEventListener('click', submitTeamDetails);
 });
 
@@ -20,12 +58,12 @@ map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
 const locations = [
-  { x: 1766, y: -866, clue: "📚 Find the place that have unlimited knowledge, Section L32 will be your door, Red and White cover - page 238 is your clue, read the passage, record it and upload for points", level: 1 },
-  { x: 1630, y: -510, clue: "🕰️ This is the history of the school, take a welfie with it and upload for points", level: 2 },
+  { x: 1766, y: -866, clue: "📚 Find the place that have unlimited knowledge, Section L32 will be your door, Red and White cover - page 238 is your clue, read the passage, record it and upload for points", stage: 1 },
+  { x: 1630, y: -510, clue: "🕰️ This is the history of the school, take a welfie with it and upload for points", stage: 2 },
 ];
 
-let currentLevel = 0;
-let unlockedLevel = 1;
+let currentStage = 0;
+let unlockedStage = 1;
 let team = '';
 let className = '';
 const markers = [];
@@ -48,16 +86,13 @@ const redMarkerIcon = L.divIcon({
 locations.forEach(loc => {
   const latlng = map.unproject([loc.x, loc.y], 0);
   const marker = L.marker(latlng, { icon: redMarkerIcon });
-  marker.bindPopup(`Level ${loc.level}`);
-  marker.on('click', () => startLevel(loc.level, loc.clue));
+  marker.bindPopup(`Stage ${loc.stage}`);
+  marker.on('click', () => startStage(loc.stage, loc.clue));
   markers.push(marker);
 });
 
 // Show only first marker
 markers[0].addTo(map);
-
-// Show team form on page load
-document.getElementById('team-form-overlay').style.display = 'flex';
 
 function submitTeamDetails() {
   team = document.getElementById('team-name').value.trim();
@@ -66,27 +101,30 @@ function submitTeamDetails() {
     alert("Please enter both Team Name and Class.");
     return;
   }
+  // Save team details to localStorage
+  localStorage.setItem('team', team);
+  localStorage.setItem('className', className);
   document.getElementById('team-form-overlay').style.display = 'none';
 }
 
-function startLevel(level, clue) {
-  if (level !== unlockedLevel) {
-    alert("🚫 You must unlock this level first!");
+function startStage(stage, clue) {
+  if (stage !== unlockedStage) {
+    alert("🚫 You must unlock this stage first!");
     return;
   }
-  currentLevel = level;
-  document.getElementById('clue-title').innerText = `Level ${level}`;
+  currentStage = stage;
+  document.getElementById('clue-title').innerText = `Stage ${stage}`;
   document.getElementById('clue-text').innerText = clue;
   document.getElementById('clue-box').style.display = 'block';
 
-  // Hide and disable Complete Level button initially
+  // Hide and disable Complete Stage button initially
   const completeBtn = document.getElementById('complete-level-btn');
   if (completeBtn) {
     completeBtn.style.display = 'none';
     completeBtn.disabled = true;
   }
 
-  // Clear previous file selection when starting new level
+  // Clear previous file selection when starting new stage
   document.getElementById("media-upload").value = "";
 }
 
@@ -108,7 +146,7 @@ async function uploadToDrive() {
     const base64Data = e.target.result.split(',')[1];
     const timestamp = new Date().toISOString();
     const payload = {
-      filename: `Level${currentLevel}_${Date.now()}_${team}_${className}_${file.name}`,
+      filename: `Stage${currentStage}_${Date.now()}_${team}_${className}_${file.name}`,
       type: file.type,
       data: base64Data,
       team: team,
@@ -158,31 +196,35 @@ async function uploadToDrive() {
   reader.readAsDataURL(file);
 }
 
-function completeLevel() {
-  alert(`✅ Level ${currentLevel} completed!`);
+function completeStage() {
+  alert(`✅ Stage ${currentStage} completed!`);
   document.getElementById('clue-box').style.display = 'none';
-  updateScoreboard(`${team} (${className}) completed Level ${currentLevel}`);
+  updateScoreboard(`${team} (${className}) completed Stage ${currentStage}`);
 
-  if (currentLevel === unlockedLevel) {
-    const currentMarker = markers[currentLevel - 1];
+  if (currentStage === unlockedStage) {
+    const currentMarker = markers[currentStage - 1];
     if (currentMarker) {
-      console.log(`Removing marker for Level ${currentLevel}`);
+      console.log(`Removing marker for Stage ${currentStage}`);
       map.removeLayer(currentMarker);
     } else {
-      console.log(`No marker found for Level ${currentLevel}`);
+      console.log(`No marker found for Stage ${currentStage}`);
     }
 
-    unlockedLevel++;
-    const nextMarker = markers[unlockedLevel - 1];
+    unlockedStage++;
+    const nextMarker = markers[unlockedStage - 1];
     if (nextMarker) {
-      console.log(`Adding marker for Level ${unlockedLevel}`);
+      console.log(`Adding marker for Stage ${unlockedStage}`);
       nextMarker.addTo(map);
     } else {
-      console.log(`No marker found for Level ${unlockedLevel}`);
+      console.log(`No marker found for Stage ${unlockedStage}`);
     }
   }
 
-  // Clear file input after level completion
+  // Save game state to localStorage
+  localStorage.setItem('currentStage', currentStage);
+  localStorage.setItem('unlockedStage', unlockedStage);
+
+  // Clear file input after stage completion
   document.getElementById("media-upload").value = "";
 }
 
@@ -193,6 +235,11 @@ function updateScoreboard(entry) {
   li.textContent = entry;
   scoreList.appendChild(li);
   scoreboard.style.display = 'block';
+
+  // Save scoreboard to localStorage
+  const currentScores = JSON.parse(localStorage.getItem('scoreboard') || '[]');
+  currentScores.push(entry);
+  localStorage.setItem('scoreboard', JSON.stringify(currentScores));
 }
 
 map.on('click', function (e) {
