@@ -193,7 +193,7 @@ async function uploadToDrive() {
     }
   };
 
-  reader.readAsData radicall(file);
+  reader.readAsDataURL(file);
 }
 
 function completeStage() {
