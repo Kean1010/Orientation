@@ -74,6 +74,11 @@ button:hover {
   background: #CC0000; /* Darker red on hover */
 }
 
+button:disabled {
+  background: #AAAAAA; /* Greyed-out background */
+  cursor: not-allowed;
+}
+
 .game-title {
   text-align: center;
   padding: 10px;
