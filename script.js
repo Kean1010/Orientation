@@ -266,6 +266,17 @@ function closeClue() {
   document.getElementById('clue-overlay').style.display = 'none';
 }
 
+function showCertificate() {
+  const savedTeam = localStorage.getItem('team');
+  const savedClass = localStorage.getItem('className');
+  if (savedTeam && savedClass) {
+    document.getElementById('certificate-team').textContent = savedTeam;
+    document.getElementById('certificate-class').textContent = savedClass;
+    document.getElementById('certificate-date').textContent = new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' });
+    document.getElementById('certificate-overlay').style.display = 'flex';
+  }
+}
+
 function resetGame() {
   localStorage.removeItem('team');
   localStorage.removeItem('className');
