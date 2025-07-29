@@ -228,7 +228,7 @@ function completeStage() {
   if (unlockedStage > locations.length) {
     document.getElementById('certificate-team').textContent = team;
     document.getElementById('certificate-class').textContent = className;
-    document.getElementById('certificate-date').textContent = new Date().toLocaleString();
+    document.getElementById('certificate-date').textContent = new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' });
     document.getElementById('certificate-overlay').style.display = 'flex';
   }
 
@@ -260,6 +260,15 @@ function updateScoreboard(entry, save = true) {
 
 function closeCertificate() {
   document.getElementById('certificate-overlay').style.display = 'none';
+}
+
+function resetGame() {
+  localStorage.removeItem('team');
+  localStorage.removeItem('className');
+  localStorage.removeItem('currentStage');
+  localStorage.removeItem('unlockedStage');
+  localStorage.removeItem('scoreboard');
+  location.reload();
 }
 
 map.on('click', function (e) {
