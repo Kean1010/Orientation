@@ -58,7 +58,7 @@ map.fitBounds(bounds);
 
 // Define game locations using VALID pixel coordinates
 const locations = [
-  { x: 1766, y: -866, clue: "📚 Find the place that have unlimited knowledge, Section L32 will be your door, Red and White cover - page 238 is your clue, read the passage, record it and upload for points", stage: 1 },
+  { x: 1766, y: -866, clue: "📚I’m full of stories but never speak, Quiet footsteps are what I seek. Climb up or walk in, rows of knowledge in sight, Snap your welfie where students read and write! Task: Take a welfie with everyone holding up their favourite book title in a funny pose.", stage: 1 },
   { x: 1630, y: -510, clue: "🕰️ This is the history of the school, take a welfie with it and upload for points", stage: 2 },
 ];
 
