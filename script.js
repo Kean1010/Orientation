@@ -115,12 +115,12 @@ function startStage(stage, clue) {
   currentStage = stage;
   document.getElementById('clue-title').innerText = `Stage ${stage}`;
   document.getElementById('clue-text').innerText = clue;
-  document.getElementById('clue-box').style.display = 'block';
+  document.getElementById('clue-overlay').style.display = 'flex';
 
   // Hide and disable Complete Stage button initially
   const completeBtn = document.getElementById('complete-level-btn');
   if (completeBtn) {
-    completeBtn.style.display = 'none';
+    completeBtn.style.display = 'inline-block';
     completeBtn.disabled = true;
   }
 
@@ -138,7 +138,7 @@ async function uploadToDrive() {
     return;
   }
 
-  if (overlay) overlay.style.display = "flex";
+  if (overlay) overlay.style.display = 'flex';
 
   const reader = new FileReader();
 
@@ -189,7 +189,7 @@ async function uploadToDrive() {
       console.error("Fetch error:", error);
       alert("❌ Upload failed.");
     } finally {
-      if (overlay) overlay.style.display = "none";
+      if (overlay) overlay.style.display = 'none';
     }
   };
 
@@ -198,7 +198,7 @@ async function uploadToDrive() {
 
 function completeStage() {
   alert(`✅ Stage ${currentStage} completed!`);
-  document.getElementById('clue-box').style.display = 'none';
+  document.getElementById('clue-overlay').style.display = 'none';
   updateScoreboard(`${team} (${className}) completed Stage ${currentStage}`);
 
   if (currentStage === unlockedStage) {
@@ -260,6 +260,10 @@ function updateScoreboard(entry, save = true) {
 
 function closeCertificate() {
   document.getElementById('certificate-overlay').style.display = 'none';
+}
+
+function closeClue() {
+  document.getElementById('clue-overlay').style.display = 'none';
 }
 
 function resetGame() {
