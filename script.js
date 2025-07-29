@@ -193,7 +193,7 @@ async function uploadToDrive() {
     }
   };
 
-  reader.readAsDataURL(file);
+  reader.readAsData radicall(file);
 }
 
 function completeStage() {
@@ -226,6 +226,9 @@ function completeStage() {
 
   // Check if all stages are completed
   if (unlockedStage > locations.length) {
+    document.getElementById('certificate-team').textContent = team;
+    document.getElementById('certificate-class').textContent = className;
+    document.getElementById('certificate-date').textContent = new Date().toLocaleString();
     document.getElementById('certificate-overlay').style.display = 'flex';
   }
 
