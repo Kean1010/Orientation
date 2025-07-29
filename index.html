@@ -1,56 +1,58 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Orientation Game</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-  <h1 class="game-title">Orientation Game</h1>
-  <div id="map"></div>
-
   <div id="team-form-overlay">
     <div id="team-form">
       <h2>Welcome to Lifeskills Orientation</h2>
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">Game Essentials:</h2>
-            <ul class="list-disc list-inside text-gray-700 space-y-2 text-base md:text-lg">
-                <br>**Objective:**</br> Find hotspots, complete tasks, verify success.
-               <br>Appoint a leader to use this map.</br>
-                <br>Enter Team Name & Class accurately.</br>
-                <br>**Crucial Rule:** **DO NOT REFRESH/RESTART BROWSER!** Losing tab means restarting game.</br>
-                <br>Teamwork, problem-solving, communication required.</br>
-                <br>**Verification:** Tasks verified by facilitators at the end.</br>
-                <br>**Goal:** Have fun and connect with classmates!</br>
-            </ul>
+      <div>
+        <strong>Game Essentials:</strong>
+        <ul>
+          <li><strong>Objective:</strong> Find hotspots, complete tasks, verify success.</li>
+          <li>Appoint a leader to use this map.</li>
+          <li>Enter Team Name & Class accurately.</li>
+          <li><strong>Crucial Rule:</strong> <strong>DO NOT REFRESH/RESTART BROWSER!</strong> Losing tab means restarting game.</li>
+          <li>Teamwork, problem-solving, communication required.</li>
+          <li><strong>Verification:</strong> Tasks verified by facilitators at the end.</li>
+          <li><strong>Goal:</strong> Have fun and connect with classmates!</li>
+        </ul>
+      </div>
       <label for="team-name">Team Name:</label>
-      <input type="text" id="team-name" placeholder="Enter your team name" required>
+      <input type="text" id="team-name" required>
       <label for="team-class">Class:</label>
-      <input type="text" id="team-class" placeholder="Enter your class" required>
+      <input type="text" id="team-class" required>
       <button id="start-game-btn">Start Game</button>
     </div>
   </div>
 
+  <div class="game-title">
+    <h2>Stage Title</h2>
+  </div>
+  <div id="map"></div>
   <div id="clue-box">
-    <h2 id="clue-title">Level Title</h2>
+    <h3 id="clue-title">Stage Title</h3>
     <p id="clue-text">Clue will appear here</p>
     <div class="upload-area">
       <input type="file" id="media-upload" accept="image/*,video/*">
       <button onclick="uploadToDrive()">Submit Upload</button>
     </div>
-    <button id="complete-level-btn" onclick="completeLevel()" style="display: none;">Mark Level Complete</button>
+    <button id="complete-level-btn" onclick="completeStage()">Mark Stage Complete</button>
   </div>
 
   <div id="scoreboard">
-    <h2>Scoreboard</h2>
+    <h3>Scoreboard</h3>
     <ul id="score-list"></ul>
   </div>
 
   <div id="loading-overlay">
-    <div>Uploading file, please wait...</div>
+    Uploading file, please wait...
   </div>
 
   <script src="script.js"></script>
